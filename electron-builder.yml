@@ -23,6 +23,9 @@ publish:
   provider: github
   owner: teddy-wooma
   repo: barkan-launcher
+  # draft 가 아니라 바로 공개 릴리즈로 만듭니다.
+  # (electron-builder 의 기본값이 draft 라서, 이 줄이 없으면 초안으로 남습니다)
+  releaseType: release
 
 files:
   - '!{dist,.gitignore,.vscode,docs,dev-app-update.yml,.nvmrc,eslint.config.mjs}'

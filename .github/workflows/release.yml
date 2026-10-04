@@ -37,8 +37,13 @@ jobs:
           "value=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Host "버전: $v"
 
-      - name: Build installer
-        run: npm run dist:win
+      # 빌드와 발행을 electron-builder 에 맡깁니다.
+      # 태그 생성, 릴리즈 생성, latest.yml/blockmap 첨부를 모두 처리합니다.
+      # (GH_TOKEN 이 없으면 CI 를 감지해 발행하려다 실패합니다)
+      - name: Build and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist -- -w --publish always
 
       - name: Write checksums
         shell: pwsh
@@ -49,25 +54,13 @@ jobs:
           Set-Content -Path "dist\SHA256SUMS.txt" -Value $line -Encoding utf8
           Write-Host $line
 
-      - name: Publish release
+      # electron-builder 가 올리지 않는 것만 따로 첨부합니다.
+      - name: Attach checksums
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "v${{ steps.version.outputs.value }}"
-
-          $assets = @()
-          Get-ChildItem "dist\Barkan-Launcher-setup-*.exe" | ForEach-Object { $assets += $_.FullName }
-          if (Test-Path "dist\SHA256SUMS.txt") { $assets += (Resolve-Path "dist\SHA256SUMS.txt").Path }
-          if (Test-Path "dist\latest.yml")    { $assets += (Resolve-Path "dist\latest.yml").Path }
-          $blockmap = Get-ChildItem "dist\*.exe.blockmap" -ErrorAction SilentlyContinue
-          if ($blockmap) { $assets += $blockmap.FullName }
-
-          gh release view $tag 2>$null | Out-Null
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "기존 릴리즈를 갱신합니다: $tag"
-            gh release upload $tag @assets --clobber
-          } else {
-            Write-Host "새 릴리즈를 만듭니다: $tag"
-            gh release create $tag @assets --title "바르칸 열도 접속기 $tag" --generate-notes
-          }
+          gh release upload $tag "dist\SHA256SUMS.txt" --clobber
+          Write-Host "--- 릴리즈 상태 ---"
+          gh release view $tag
