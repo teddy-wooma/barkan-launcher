@@ -1,0 +1,16 @@
+# 언어와 무관한 설정만 남깁니다.
+#
+# 번역 문구는 언어별 파일(ko_KR.toml, ja_JP.toml ...)에 있고,
+# 이 파일은 그 뒤에 로드되어 브랜드·주소처럼 모든 언어에서 같아야 하는 값만 덮어씁니다.
+# (langloader.setupLanguage: en_US -> <선택한 언어> -> _custom)
+
+[ejs.app]
+# 창 제목. 서버 고유 이름이라 모든 언어에서 같게 둡니다.
+title = "바르칸 열도 접속기"
+
+[ejs.landing]
+# 랜딩 화면 하단 버튼 (왼쪽부터 링크 · 유튜브 · 디스코드 순).
+# X(트위터)와 인스타그램 버튼은 app/landing.ejs 에서 제거했습니다.
+mediaWebsiteURL = "https://barkan.kr/"
+mediaYouTubeURL = "https://www.youtube.com/@barkan-minecraft"
+mediaDiscordURL = "https://discord.gg/PfXwvjaUT"

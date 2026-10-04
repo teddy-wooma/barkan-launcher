@@ -1,0 +1,95 @@
+appId: 'kr.barkan.launcher'
+productName: 'Barkan Launcher'
+artifactName: 'Barkan-Launcher-setup-${version}.${ext}'
+
+copyright: 'Copyright © 2026 Barkan'
+
+asar: true
+# The resource pack is no longer bundled here - the launcher downloads the latest
+# release on PLAY (see `resourcePack` in tools/build-distribution.cjs), which keeps
+# the installer around 95 MB instead of 200 MB.
+compression: 'maximum'
+
+# Every runtime dependency of this launcher is pure JavaScript, so there is
+# nothing to compile when packaging. Skipping the @electron/rebuild step makes
+# the build faster and avoids requiring a full native toolchain.
+npmRebuild: false
+
+# Auto-update is intentionally not configured yet. Because there is no
+# `repository`/`publish` target, the launcher will not offer to install updates.
+# See README.md ("자동 업데이트") for how to publish releases to your own
+# GitHub repository and enable it.
+publish: null
+
+files:
+  - '!{dist,.gitignore,.vscode,docs,dev-app-update.yml,.nvmrc,eslint.config.mjs}'
+  # Development-only directories. `.npm-cache` and `.eb-cache` in particular are
+  # large and must never end up inside the installer.
+  - '!tools'
+  - '!.npm-cache'
+  - '!.eb-cache'
+  - '!.verify'
+  - '!.userdata'
+  - '!_branding-original'
+  - '!_private'
+
+extraResources:
+  - 'libraries'
+
+# Windows Configuration
+win: 
+  target: 
+    - target: 'nsis'
+      arch: 'x64'
+
+# Windows Installer Configuration
+nsis:
+  oneClick: false
+  # 설치 관리자도 언어를 고르게 합니다. (설치 마법사의 버튼/문구만 바뀝니다.
+  # 앱 자체의 언어는 첫 실행 때 따로 고릅니다)
+  multiLanguageInstaller: true
+  installerLanguages:
+    - ko_KR
+    - en_US
+    - ja_JP
+    - zh_CN
+    - zh_TW
+    - es_ES
+    - pt_BR
+    - fr_FR
+    - de_DE
+    - ru_RU
+  # 모든 사용자(per-machine) 설치로 고정합니다.
+  # perMachine: false 이면 설치 관리자가 "전용 사용자 / 모든 사용자" 선택 페이지를
+  # 띄웁니다. true 로 두면 그 페이지가 나오지 않고 곧바로 관리자 권한 요청(UAC) 후
+  # 모든 사용자용으로 설치됩니다. (Program Files 에 설치됨)
+  perMachine: true
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  shortcutName: '바르칸 열도 접속기'
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+# macOS Configuration
+mac:
+  target:
+    - target: 'dmg'
+      arch:
+        - 'x64'
+        - 'arm64'
+  artifactName: '${productName}-setup-${version}-${arch}.${ext}'
+  category: 'public.app-category.games'
+
+# Linux Configuration
+linux: 
+  target: 'AppImage'
+  maintainer: 'Barkan'
+  vendor: 'Barkan'
+  synopsis: '바르칸 열도 마인크래프트 런처'
+  description: '바르칸 열도 서버 전용 런처. 모드, 설정, 업데이트가 자동으로 관리됩니다.'
+  category: 'Game'
+
+
+directories:
+  buildResources: 'build'
+  output: 'dist'

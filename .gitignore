@@ -1,0 +1,19 @@
+# Dependencies
+/node_modules/
+
+# Build output
+/dist/
+
+# Local caches (kept inside the project so builds work without write access
+# to the global npm/electron caches)
+/.npm-cache/
+/.eb-cache/
+/.build-tmp/
+/.verify/
+
+# IDE / OS
+/.vs/
+/.vscode/
+/.idea/
+Thumbs.db
+desktop.ini

@@ -1,0 +1,372 @@
+[ejs.landing]
+infoTitle = "지금 바르칸에서는."
+infoLead = "시세·랭킹·어획 기록은 게임에서 바로 가져옵니다. 궁금한 곳을 눌러 자세히 살펴보세요."
+infoMarket = "최근 거래 시세"
+infoRanking = "랭킹"
+infoRare = "방금 잡힌 희귀 어종"
+infoOnline = "접속자"
+infoToday = "오늘 어획"
+infoLoading = "불러오는 중.."
+infoFailed = "정보를 불러오지 못했습니다."
+
+shadersLabel = "셰이더팩"
+shaderLow = "저사양"
+shaderHigh = "고사양"
+
+updateAvailableTooltip = "Update Available"
+usernamePlaceholder = "Username"
+usernameEditButton = "Edit"
+settingsTooltip = "Settings"
+serverStatus = "SERVER"
+serverStatusPlaceholder = "OFFLINE"
+mojangStatus = "MOJANG STATUS"
+mojangStatusTooltipTitle = "Services"
+mojangStatusNETitle = "Non&nbsp;Essential"
+newsButton = "소식"
+launchButton = "PLAY"
+launchButtonPlaceholder = "&#8226; No Server Selected"
+launchDetails = "Please wait.."
+newsNavigationStatus = "{currentPage} of {totalPages}"
+newsErrorLoadSpan = "소식을 확인하는 중.."
+newsErrorFailedSpan = "소식을 불러오지 못했습니다"
+newsErrorRetryButton = "다시 시도"
+newsErrorNoneSpan = "새 소식이 없습니다"
+newsByAuthor = "by {author}"
+
+[ejs.login]
+loginCancelText = "Cancel"
+loginSubheader = "MINECRAFT LOGIN"
+loginEmailError = "* Invalid Value"
+loginEmailPlaceholder = "EMAIL OR USERNAME"
+loginPasswordError = "* Required"
+loginPasswordPlaceholder = "PASSWORD"
+loginForgotPasswordLink = "https://minecraft.net/password/forgot/"
+loginForgotPasswordText = "forgot password?"
+loginRememberMeText = "remember me?"
+loginButtonText = "LOGIN"
+loginNeedAccountLink = "https://minecraft.net/store/minecraft-java-edition/"
+loginNeedAccountText = "Need an Account?"
+loginPasswordDisclaimer1 = "Your password is sent directly to mojang and never stored."
+loginPasswordDisclaimer2 = "{appName} is not affiliated with Mojang AB."
+
+[ejs.loginOptions]
+loginOptionsTitle = "Login Options"
+loginWithMicrosoft = "Login with Microsoft"
+loginWithMojang = "Login with Mojang"
+cancelButton = "Cancel"
+
+[ejs.overlay]
+serverSelectHeader = "Available Servers"
+serverSelectConfirm = "Select"
+serverSelectCancel = "Cancel"
+accountSelectHeader = "Select an Account"
+accountSelectConfirm = "Select"
+accountSelectCancel = "Cancel"
+
+[ejs.settings]
+modsUpdate = "업데이트"
+modsInstalled = "설치됨"
+modsOff = "꺼짐"
+modsMissing = "미설치"
+
+navLanguage = "언어"
+tabLanguageHeaderText = "언어"
+tabLanguageHint = "런처와 마인크래프트 클라이언트 언어가 함께 바뀝니다."
+
+navHeaderText = "설정"
+navAccount = "계정"
+navMinecraft = "마인크래프트"
+navMods = "모드"
+navJava = "Java"
+navLauncher = "런처"
+navAbout = "정보"
+navUpdates = "업데이트"
+navDone = "완료"
+tabAccountHeaderText = "계정 설정"
+tabAccountHeaderDesc = "새 계정을 추가하거나 기존 계정을 관리합니다."
+microsoftAccount = "Microsoft"
+addMicrosoftAccount = "+ Microsoft 계정 추가"
+mojangAccount = "Mojang"
+addMojangAccount = "+ Mojang 계정 추가"
+minecraftTabHeaderText = "마인크래프트 설정"
+minecraftTabHeaderDesc = "게임 실행과 관련된 옵션입니다."
+gameResolutionTitle = "게임 해상도"
+launchFullscreenTitle = "전체 화면으로 실행합니다."
+autoConnectTitle = "실행할 때 서버에 자동으로 접속합니다."
+launchDetachedTitle = "게임 프로세스를 런처와 분리해서 실행합니다."
+launchDetachedDesc = "분리하지 않으면 런처를 닫을 때 게임도 함께 종료됩니다."
+tabModsHeaderText = "모드 설정"
+tabModsHeaderDesc = "모드를 켜거나 끕니다."
+switchServerButton = "전환"
+requiredMods = "필수 모드"
+optionalMods = "선택 모드"
+dropinMods = "드롭인 모드"
+addMods = "모드 추가"
+dropinRefreshNote = "(F5로 새로고침)"
+shaderpacks = "셰이더팩"
+shaderpackDesc = "셰이더를 켜거나 끕니다. 셰이더는 성능이 좋은 PC에서만 원활하게 동작합니다. 직접 추가할 수도 있습니다."
+selectShaderpack = "셰이더팩 선택"
+tabJavaHeaderText = "Java 설정"
+tabJavaHeaderDesc = "Java 구성을 관리합니다. (고급)"
+memoryTitle = "메모리"
+maxRAM = "최대 RAM"
+minRAM = "최소 RAM"
+memoryDesc = "권장 최소 RAM은 3GB입니다. 최소와 최대 값을 같게 설정하면 렉이 줄어들 수 있습니다."
+memoryTotalTitle = "전체"
+memoryAvailableTitle = "사용 가능"
+javaExecutableTitle = "Java 실행 파일"
+javaExecSelDialogTitle = "Java 실행 파일 선택"
+javaExecSelButtonText = "파일 선택"
+javaExecDesc = "게임을 실행하기 전에 Java 실행 파일을 검증합니다."
+javaPathDesc = "경로가 <strong>{pathSuffix}</strong> 로 끝나야 합니다."
+jvmOptsTitle = "추가 JVM 옵션"
+jvmOptsDesc = "실행할 때 JVM에 전달할 옵션입니다. <em>-Xms</em> 와 <em>-Xmx</em> 는 포함하지 마세요."
+launcherTabHeaderText = "런처 설정"
+launcherTabHeaderDesc = "런처 자체와 관련된 옵션입니다."
+allowPrereleaseTitle = "사전 릴리스 업데이트 허용"
+allowPrereleaseDesc = "사전 릴리스에는 아직 충분히 검증되지 않은 기능이 포함될 수 있습니다.<br>사전 릴리스 버전을 사용 중이라면 항상 켜집니다."
+dataDirectoryTitle = "데이터 폴더"
+selectDataDirectory = "데이터 폴더 선택"
+chooseFolder = "폴더 선택"
+dataDirectoryDesc = "게임 파일과 Java 설치본이 이 폴더에 저장됩니다.<br>스크린샷과 월드 저장 파일은 해당 서버의 인스턴스 폴더에 저장됩니다."
+aboutTabHeaderText = "정보"
+aboutTabHeaderDesc = "현재 버전의 정보와 릴리스 노트를 봅니다."
+aboutTitle = "{appName}"
+stableRelease = "정식 릴리스"
+versionText = "버전 "
+sourceGithub = "소스 (GitHub)"
+support = "지원"
+devToolsConsole = "개발자 콘솔"
+releaseNotes = "릴리스 노트"
+changelog = "변경 사항"
+noReleaseNotes = "릴리스 노트 없음"
+viewReleaseNotes = "GitHub에서 릴리스 노트 보기"
+launcherUpdatesHeaderText = "런처 업데이트"
+launcherUpdatesHeaderDesc = "런처 업데이트를 내려받고 설치하고 확인합니다."
+checkForUpdates = "업데이트 확인"
+whatsNew = "새로운 기능"
+updateReleaseNotes = "업데이트 릴리스 노트"
+
+[ejs.waiting]
+waitingText = "Waiting for Microsoft.."
+
+[ejs.welcome]
+welcomeHeader = "🎣 낚시가 모험이 되는 곳, 바르칸 열도!"
+welcomeDescription = "바르칸 열도는 낚시를 중심으로 탐험·농사·광질·요리를 즐기는 오픈월드 힐링 마인팜 RPG 서버입니다. 여러 지역을 여행하며 새로운 물고기를 발견하고, 나만의 속도로 성장해 보세요."
+welcomeDescCTA = "계속하려면 아래 버튼을 눌러 주세요."
+
+continueButton = "CONTINUE"
+
+
+[js.discord]
+waiting = "Waiting for Client.."
+state = "Server: {shortId}"
+
+[js.index]
+microsoftLoginTitle = "Microsoft Login"
+microsoftLogoutTitle = "Microsoft Logout"
+
+[js.login]
+login = "LOGIN"
+loggingIn = "LOGGING IN"
+success = "SUCCESS"
+tryAgain = "Try Again"
+
+[js.login.error]
+invalidValue = "* Invalid Value"
+requiredValue = "* Required"
+
+[js.login.error.unknown]
+title = "Unknown Error During Login"
+desc = "An unknown error has occurred. Please see the console for details."
+
+[js.landing.launch]
+pleaseWait = "Please wait.."
+failureTitle = "Error During Launch"
+failureText = "See console (CTRL + Shift + i) for more details."
+okay = "Okay"
+
+[js.landing.selectedAccount]
+noAccountSelected = "No Account Selected"
+
+[js.landing.selectedServer]
+noSelection = "No Server Selected"
+loading = "Loading.."
+
+[js.landing.serverStatus]
+server = "SERVER"
+offline = "OFFLINE"
+players = "PLAYERS"
+
+[js.landing.systemScan]
+checking = "Checking system info.."
+noCompatibleJava = "No Compatible<br>Java Installation Found"
+installJavaMessage = "In order to launch Minecraft, you need a 64-bit installation of Java {major}. Would you like us to install a copy?"
+installJava = "Install Java"
+installJavaManually = "Install Manually"
+javaDownloadPrepare = "Preparing Java Download.."
+javaDownloadFailureTitle = "Error During Java Download"
+javaDownloadFailureText = "See console (CTRL + Shift + i) for more details."
+javaRequired = "Java is Required<br>to Launch"
+javaRequiredMessage = 'A valid x64 installation of Java {major} is required to launch.<br><br>Please refer to our <a href="https://github.com/dscalzi/HeliosLauncher/wiki/Java-Management#manually-installing-a-valid-version-of-java">Java Management Guide</a> for instructions on how to manually install Java.'
+javaRequiredDismiss = "I Understand"
+javaRequiredCancel = "Go Back"
+
+[js.landing.downloadJava]
+findJdkFailure = "Failed to find OpenJDK distribution."
+javaDownloadCorruptedError = "Downloaded JDK has a bad hash, the file may be corrupted."
+extractingJava = "Extracting Java"
+javaInstalled = "Java Installed!"
+
+[js.landing.dlAsync]
+loadingServerInfo = "Loading server information.."
+fatalError = "Fatal Error"
+unableToLoadDistributionIndex = "Could not load a copy of the distribution index. See the console (CTRL + Shift + i) for more details."
+pleaseWait = "Please wait.."
+errorDuringLaunchTitle = "Error During Launch"
+seeConsoleForDetails = "See console (CTRL + Shift + i) for more details."
+validatingFileIntegrity = "Validating file integrity.."
+errorDuringFileVerificationTitle = "Error During File Verification"
+downloadingFiles = "Downloading files.."
+errorDuringFileDownloadTitle = "Error During File Download"
+preparingToLaunch = "Preparing to launch.."
+launchingGame = "Launching game.."
+launchWrapperNotDownloaded = "게임 실행에 필요한 파일을 내려받지 못했습니다.<br><br>백신 프로그램이 런처의 파일 다운로드를 막고 있는 경우가 많습니다. 백신을 잠시 끄고 다시 실행해 주세요. 문제가 계속되면 콘솔(CTRL + Shift + i)의 내용을 서버 운영진에게 전달해 주세요."
+doneEnjoyServer = "Done. Enjoy the server!"
+checkConsoleForDetails = "Please check the console (CTRL + Shift + i) for more details."
+
+[js.landing.news]
+checking = "Checking for News"
+
+[js.landing.discord]
+loading = "게임 실행 중.."
+joining = "바르칸 열도로 이동 중!"
+joined = "바르칸 열도 탐험 중!"
+
+[js.overlay]
+dismiss = "Dismiss"
+
+[js.settings.fileSelectors]
+executables = "실행 파일"
+allFiles = "모든 파일"
+
+[js.settings.mstfLogin]
+errorTitle = "문제가 발생했습니다"
+errorMessage = "Microsoft 인증에 실패했습니다. 다시 시도해 주세요."
+okButton = "확인"
+
+[js.settings.mstfLogout]
+errorTitle = "문제가 발생했습니다"
+errorMessage = "Microsoft 로그아웃에 실패했습니다. 다시 시도해 주세요."
+okButton = "확인"
+
+[js.settings.authAccountSelect]
+selectButton = "계정 선택"
+selectedButton = "선택된 계정 &#10004;"
+
+[js.settings.authAccountLogout]
+lastAccountWarningTitle = "경고<br>마지막 계정입니다"
+lastAccountWarningMessage = "런처를 사용하려면 계정이 최소 한 개 로그인되어 있어야 합니다. 로그아웃한 뒤 다시 로그인해야 합니다.<br><br>정말 로그아웃하시겠습니까?"
+confirmButton = "로그아웃"
+cancelButton = "취소"
+
+[js.settings.authAccountPopulate]
+username = "이름"
+uuid = "UUID"
+selectAccount = "계정 선택"
+selectedAccount = "선택된 계정 ✓"
+logout = "로그아웃"
+
+[js.settings.dropinMods]
+removeButton = "삭제"
+deleteFailedTitle = "드롭인 모드 삭제 실패<br>{fullName}"
+deleteFailedMessage = "파일이 사용 중이 아닌지 확인하고 다시 시도해 주세요."
+failedToggleTitle = "드롭인 모드 전환 실패<br>일부 모드를 변경하지 못했습니다"
+okButton = "확인"
+
+[js.settings.serverListing]
+mainServer = "메인 서버"
+
+[js.settings.java]
+selectedJava = "선택됨: Java {version} ({vendor})"
+invalidSelection = "잘못된 선택입니다"
+requiresJava = "Java {major} x64 가 필요합니다."
+availableOptions = "Java {major} 사용 가능한 옵션 (HotSpot VM)"
+
+[js.settings.about]
+preReleaseTitle = "사전 릴리스"
+stableReleaseTitle = "정식 릴리스"
+releaseNotesFailed = "릴리스 노트를 불러오지 못했습니다."
+
+[js.settings.updates]
+newReleaseTitle = "새 릴리스를 사용할 수 있습니다"
+newPreReleaseTitle = "새 사전 릴리스를 사용할 수 있습니다"
+downloadingButton = "내려받는 중.."
+downloadButton = "GitHub에서 내려받기<span style=\"font-size: 10px;color: gray;text-shadow: none !important;\">런처를 닫고 dmg 파일을 실행해 업데이트하세요.</span>"
+latestVersionTitle = "최신 버전을 사용 중입니다"
+checkForUpdatesButton = "업데이트 확인"
+checkingForUpdatesButton = "업데이트 확인 중.."
+
+[js.settings.msftLogin]
+errorTitle = "Microsoft 로그인 실패"
+errorMessage = "Microsoft 계정 인증에 실패했습니다. 다시 시도해 주세요."
+okButton = "확인"
+
+[js.uibinder.startup]
+fatalErrorTitle = "Fatal Error: Unable to Load Distribution Index"
+fatalErrorMessage = "A connection could not be established to our servers to download the distribution index. No local copies were available to load. <br><br>The distribution index is an essential file which provides the latest server information. The launcher is unable to start without it. Ensure you are connected to the internet and relaunch the application."
+closeButton = "Close"
+
+[js.uibinder.validateAccount]
+failedMessageTitle = "Failed to Refresh Login"
+failedMessage = "We were unable to refresh the login for <strong>{account}</strong>. Please select another account or login again."
+failedMessageSelectAnotherAccount = "We were unable to refresh the login for <strong>{account}</strong>. Please login again."
+loginButton = "Login"
+selectAnotherAccountButton = "Select Another Account"
+
+[js.uicore.autoUpdate]
+checkingForUpdateButton = "업데이트 확인 중..."
+installNowButton = "지금 설치"
+checkForUpdatesButton = "업데이트 확인"
+
+[js.auth.microsoft.error]
+noProfileTitle = "Error During Login:<br>Profile Not Set Up"
+noProfileDesc = "Your Microsoft account does not yet have a Minecraft profile set up. If you have recently purchased the game or redeemed it through Xbox Game Pass, you have to set up your profile on <a href=\"https://minecraft.net/\">Minecraft.net</a>.<br><br>If you have not yet purchased the game, you can also do that on <a href=\"https://minecraft.net/\">Minecraft.net</a>."
+noXboxAccountTitle = "Error During Login:<br>No Xbox Account"
+noXboxAccountDesc = "Your Microsoft account has no Xbox account associated with it."
+xblBannedTitle = "Error During Login:<br>Xbox Live Unavailable"
+xblBannedDesc = "Your Microsoft account is from a country where Xbox Live is not available or banned."
+under18Title = "Error During Login:<br>Parental Approval Required"
+under18Desc = "Accounts for users under the age of 18 must be added to a Family by an adult."
+unknownTitle = "Unknown Error During Login"
+unknownDesc = "An unknown error has occurred. Please see the console for details."
+
+[js.auth.mojang.error]
+methodNotAllowedTitle = "Internal Error:<br>Method Not Allowed"
+methodNotAllowedDesc = "Method not allowed. Please report this error."
+notFoundTitle = "Internal Error:<br>Not Found"
+notFoundDesc = "The authentication endpoint was not found. Please report this issue."
+accountMigratedTitle = "Error During Login:<br>Account Migrated"
+accountMigratedDesc = "You've attempted to login with a migrated account. Try again using the account email as the username."
+invalidCredentialsTitle = "Error During Login:<br>Invalid Credentials"
+invalidCredentialsDesc = "The email or password you've entered is incorrect. Please try again."
+tooManyAttemptsTitle = "Error During Login:<br>Too Many Attempts"
+tooManyAttemptsDesc = "There have been too many login attempts with this account recently. Please try again later."
+invalidTokenTitle = "Error During Login:<br>Invalid Token"
+invalidTokenDesc = "The provided access token is invalid."
+tokenHasProfileTitle = "Error During Login:<br>Token Has Profile"
+tokenHasProfileDesc = "Access token already has a profile assigned. Selecting profiles is not implemented yet."
+credentialsMissingTitle = "Error During Login:<br>Credentials Missing"
+credentialsMissingDesc = "Username/password was not submitted or password is less than 3 characters."
+invalidSaltVersionTitle = "Error During Login:<br>Invalid Salt Version"
+invalidSaltVersionDesc = "Invalid salt version."
+unsupportedMediaTypeTitle = "Internal Error:<br>Unsupported Media Type"
+unsupportedMediaTypeDesc = "Unsupported media type. Please report this error."
+accountGoneTitle = "Error During Login:<br>Account Migrated"
+accountGoneDesc = "Account has been migrated to a Microsoft account. Please log in with Microsoft."
+unreachableTitle = "Error During Login:<br>Unreachable"
+unreachableDesc = "Unable to reach the authentication servers. Ensure that they are online and you are connected to the internet."
+gameNotPurchasedTitle = "Error During Login:<br>Game Not Purchased"
+gameNotPurchasedDesc = "The account you are trying to login with has not purchased a copy of Minecraft. You may purchase a copy on <a href=\"https://minecraft.net/\">Minecraft.net</a>"
+unknownErrorTitle = "Unknown Error During Login"
+unknownErrorDesc = "An unknown error has occurred. Please see the console for details."

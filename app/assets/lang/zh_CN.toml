@@ -1,0 +1,372 @@
+[ejs.landing]
+infoTitle = "巴尔坎此刻"
+infoLead = "行情、排行与渔获记录直接取自游戏，点击想看的项目即可查看详情。"
+infoMarket = "最近成交行情"
+infoRanking = "排行榜"
+infoRare = "刚刚钓到的稀有鱼"
+infoOnline = "在线"
+infoToday = "今日渔获"
+infoLoading = "加载中.."
+infoFailed = "无法加载信息。"
+
+shadersLabel = "光影"
+shaderLow = "低配"
+shaderHigh = "高配"
+
+updateAvailableTooltip = "有可用更新"
+usernamePlaceholder = "用户名"
+usernameEditButton = "编辑"
+settingsTooltip = "设置"
+serverStatus = "服务器"
+serverStatusPlaceholder = "离线"
+mojangStatus = "MOJANG 状态"
+mojangStatusTooltipTitle = "服务"
+mojangStatusNETitle = "非&nbsp;必需"
+newsButton = "新闻"
+launchButton = "开始游戏"
+launchButtonPlaceholder = "&#8226; 未选择服务器"
+launchDetails = "请稍候.."
+newsNavigationStatus = "第 {currentPage} 页，共 {totalPages} 页"
+newsErrorLoadSpan = "正在检查新闻.."
+newsErrorFailedSpan = "新闻加载失败"
+newsErrorRetryButton = "重试"
+newsErrorNoneSpan = "暂无新闻"
+newsByAuthor = "作者：{author}"
+
+[ejs.login]
+loginCancelText = "取消"
+loginSubheader = "MINECRAFT 登录"
+loginEmailError = "* 无效的值"
+loginEmailPlaceholder = "邮箱或用户名"
+loginPasswordError = "* 必填"
+loginPasswordPlaceholder = "密码"
+loginForgotPasswordLink = "https://minecraft.net/password/forgot/"
+loginForgotPasswordText = "忘记密码？"
+loginRememberMeText = "记住我？"
+loginButtonText = "登录"
+loginNeedAccountLink = "https://minecraft.net/store/minecraft-java-edition/"
+loginNeedAccountText = "需要账号？"
+loginPasswordDisclaimer1 = "您的密码会直接发送给 Mojang，绝不会被存储。"
+loginPasswordDisclaimer2 = "{appName} 与 Mojang AB 没有任何关联。"
+
+[ejs.loginOptions]
+loginOptionsTitle = "登录选项"
+loginWithMicrosoft = "使用 Microsoft 登录"
+loginWithMojang = "使用 Mojang 登录"
+cancelButton = "取消"
+
+[ejs.overlay]
+serverSelectHeader = "可用服务器"
+serverSelectConfirm = "选择"
+serverSelectCancel = "取消"
+accountSelectHeader = "选择账号"
+accountSelectConfirm = "选择"
+accountSelectCancel = "取消"
+
+[ejs.settings]
+modsUpdate = "更新"
+modsInstalled = "已安装"
+modsOff = "已关闭"
+modsMissing = "未安装"
+
+navLanguage = "语言"
+tabLanguageHeaderText = "语言"
+tabLanguageHint = "启动器与 Minecraft 客户端的语言会同时更改。"
+
+navHeaderText = "设置"
+navAccount = "账号"
+navMinecraft = "Minecraft"
+navMods = "模组"
+navJava = "Java"
+navLauncher = "启动器"
+navAbout = "关于"
+navUpdates = "更新"
+navDone = "完成"
+tabAccountHeaderText = "账号设置"
+tabAccountHeaderDesc = "添加新账号或管理现有账号。"
+microsoftAccount = "Microsoft"
+addMicrosoftAccount = "+ 添加 Microsoft 账号"
+mojangAccount = "Mojang"
+addMojangAccount = "+ 添加 Mojang 账号"
+minecraftTabHeaderText = "Minecraft 设置"
+minecraftTabHeaderDesc = "与游戏启动相关的选项。"
+gameResolutionTitle = "游戏分辨率"
+launchFullscreenTitle = "以全屏模式启动。"
+autoConnectTitle = "启动时自动连接到服务器。"
+launchDetachedTitle = "让游戏进程与启动器分离运行。"
+launchDetachedDesc = "如果游戏进程未分离，关闭启动器时也会同时关闭游戏。"
+tabModsHeaderText = "模组设置"
+tabModsHeaderDesc = "启用或禁用模组。"
+switchServerButton = "切换"
+requiredMods = "必需模组"
+optionalMods = "可选模组"
+dropinMods = "即插即用模组"
+addMods = "添加模组"
+dropinRefreshNote = "（按 F5 刷新）"
+shaderpacks = "光影包"
+shaderpackDesc = "启用或禁用光影。请注意，光影只有在高性能配置上才能流畅运行。您可以在此添加自定义光影包。"
+selectShaderpack = "选择光影包"
+tabJavaHeaderText = "Java 设置"
+tabJavaHeaderDesc = "管理 Java 配置（高级）。"
+memoryTitle = "内存"
+maxRAM = "最大内存"
+minRAM = "最小内存"
+memoryDesc = "建议的最小内存为 3 GB。将最小值和最大值设为相同数值可以减少卡顿。"
+memoryTotalTitle = "总计"
+memoryAvailableTitle = "可用"
+javaExecutableTitle = "Java 可执行文件"
+javaExecSelDialogTitle = "选择 Java 可执行文件"
+javaExecSelButtonText = "选择文件"
+javaExecDesc = "启动游戏前会先验证 Java 可执行文件。"
+javaPathDesc = "路径应以 <strong>{pathSuffix}</strong> 结尾。"
+jvmOptsTitle = "附加 JVM 参数"
+jvmOptsDesc = "在运行时提供给 JVM 的参数。不应包含 <em>-Xms</em> 和 <em>-Xmx</em>。"
+launcherTabHeaderText = "启动器设置"
+launcherTabHeaderDesc = "与启动器本身相关的选项。"
+allowPrereleaseTitle = "允许预发布版更新。"
+allowPrereleaseDesc = "预发布版包含可能尚未经过完整测试或整合的新功能。<br>如果您正在使用预发布版本，此项将始终为真。"
+dataDirectoryTitle = "数据目录"
+selectDataDirectory = "选择数据目录"
+chooseFolder = "选择文件夹"
+dataDirectoryDesc = "所有游戏文件和本地 Java 安装都将存储在数据目录中。<br>截图和世界存档则存储在对应服务器配置的实例文件夹中。"
+aboutTabHeaderText = "关于"
+aboutTabHeaderDesc = "查看当前版本的信息和发行说明。"
+aboutTitle = "{appName}"
+stableRelease = "稳定版"
+versionText = "版本 "
+sourceGithub = "源代码（GitHub）"
+support = "支持"
+devToolsConsole = "DevTools 控制台"
+releaseNotes = "发行说明"
+changelog = "更新日志"
+noReleaseNotes = "暂无发行说明"
+viewReleaseNotes = "在 GitHub 上查看发行说明"
+launcherUpdatesHeaderText = "启动器更新"
+launcherUpdatesHeaderDesc = "下载、安装并查看启动器的更新。"
+checkForUpdates = "检查更新"
+whatsNew = "新功能"
+updateReleaseNotes = "更新发行说明"
+
+[ejs.waiting]
+waitingText = "正在等待 Microsoft.."
+
+[ejs.welcome]
+welcomeHeader = "🎣 让钓鱼成为冒险的地方——巴尔坎群岛！"
+welcomeDescription = "巴尔坎群岛是以钓鱼为核心，融合探索、农耕、挖矿与料理的开放世界治愈系农场 RPG 服务器。走遍各个地区，发现新的鱼类，按自己的节奏成长吧。"
+welcomeDescCTA = "点击下方按钮继续。"
+
+continueButton = "继续"
+
+
+[js.discord]
+waiting = "正在等待客户端.."
+state = "服务器：{shortId}"
+
+[js.index]
+microsoftLoginTitle = "Microsoft 登录"
+microsoftLogoutTitle = "Microsoft 登出"
+
+[js.login]
+login = "登录"
+loggingIn = "正在登录"
+success = "成功"
+tryAgain = "重试"
+
+[js.login.error]
+invalidValue = "* 无效的值"
+requiredValue = "* 必填"
+
+[js.login.error.unknown]
+title = "登录时发生未知错误"
+desc = "发生了未知错误。请查看控制台了解详情。"
+
+[js.landing.launch]
+pleaseWait = "请稍候.."
+failureTitle = "启动时出错"
+failureText = "请查看控制台（CTRL + Shift + i）了解更多详情。"
+okay = "好的"
+
+[js.landing.selectedAccount]
+noAccountSelected = "未选择账号"
+
+[js.landing.selectedServer]
+noSelection = "未选择服务器"
+loading = "加载中.."
+
+[js.landing.serverStatus]
+server = "服务器"
+offline = "离线"
+players = "玩家"
+
+[js.landing.systemScan]
+checking = "正在检查系统信息.."
+noCompatibleJava = "未找到兼容的<br>Java 安装"
+installJavaMessage = "要启动 Minecraft，您需要安装 64 位的 Java {major}。需要由我们为您安装一份吗？"
+installJava = "安装 Java"
+installJavaManually = "手动安装"
+javaDownloadPrepare = "正在准备下载 Java.."
+javaDownloadFailureTitle = "下载 Java 时出错"
+javaDownloadFailureText = "请查看控制台（CTRL + Shift + i）了解更多详情。"
+javaRequired = "启动游戏<br>需要 Java"
+javaRequiredMessage = "启动游戏需要有效的 x64 版 Java {major}。<br><br>请参阅我们的 <a href=\"https://github.com/dscalzi/HeliosLauncher/wiki/Java-Management#manually-installing-a-valid-version-of-java\">Java 管理指南</a>，了解如何手动安装 Java。"
+javaRequiredDismiss = "我明白了"
+javaRequiredCancel = "返回"
+
+[js.landing.downloadJava]
+findJdkFailure = "未能找到 OpenJDK 发行版。"
+javaDownloadCorruptedError = "下载的 JDK 哈希值有误，文件可能已损坏。"
+extractingJava = "正在解压 Java"
+javaInstalled = "Java 已安装！"
+
+[js.landing.dlAsync]
+loadingServerInfo = "正在加载服务器信息.."
+fatalError = "致命错误"
+unableToLoadDistributionIndex = "无法加载分发索引的副本。请查看控制台（CTRL + Shift + i）了解更多详情。"
+pleaseWait = "请稍候.."
+errorDuringLaunchTitle = "启动时出错"
+seeConsoleForDetails = "请查看控制台（CTRL + Shift + i）了解更多详情。"
+validatingFileIntegrity = "正在校验文件完整性.."
+errorDuringFileVerificationTitle = "校验文件时出错"
+downloadingFiles = "正在下载文件.."
+errorDuringFileDownloadTitle = "下载文件时出错"
+preparingToLaunch = "正在准备启动.."
+launchingGame = "正在启动游戏.."
+launchWrapperNotDownloaded = "主文件 LaunchWrapper 未能正确下载，因此游戏无法启动。<br><br>要解决此问题，请暂时关闭杀毒软件，然后重新启动游戏。<br><br>如果您有时间，请<a href=\"https://github.com/dscalzi/HeliosLauncher/issues\">提交一个问题</a>，告诉我们您使用的是哪款杀毒软件。我们会联系他们，尝试解决这个问题。"
+doneEnjoyServer = "完成。祝您游戏愉快！"
+checkConsoleForDetails = "请查看控制台（CTRL + Shift + i）了解更多详情。"
+
+[js.landing.news]
+checking = "正在检查新闻"
+
+[js.landing.discord]
+loading = "正在加载游戏.."
+joining = "正驶向维斯特洛！"
+joined = "正在探索这片大陆！"
+
+[js.overlay]
+dismiss = "关闭"
+
+[js.settings.fileSelectors]
+executables = "可执行文件"
+allFiles = "所有文件"
+
+[js.settings.mstfLogin]
+errorTitle = "出了点问题"
+errorMessage = "Microsoft 身份验证失败。请重试。"
+okButton = "确定"
+
+[js.settings.mstfLogout]
+errorTitle = "出了点问题"
+errorMessage = "Microsoft 登出失败。请重试。"
+okButton = "确定"
+
+[js.settings.authAccountSelect]
+selectButton = "选择账号"
+selectedButton = "已选择账号 &#10004;"
+
+[js.settings.authAccountLogout]
+lastAccountWarningTitle = "警告<br>这是您的最后一个账号"
+lastAccountWarningMessage = "要使用启动器，您必须至少登录一个账号。之后您需要重新登录。<br><br>确定要登出吗？"
+confirmButton = "我确定"
+cancelButton = "取消"
+
+[js.settings.authAccountPopulate]
+username = "用户名"
+uuid = "UUID"
+selectAccount = "选择账号"
+selectedAccount = "已选择账号 ✓"
+logout = "登出"
+
+[js.settings.dropinMods]
+removeButton = "移除"
+deleteFailedTitle = "删除失败<br>即插即用模组 {fullName}"
+deleteFailedMessage = "请确认该文件未被占用，然后重试。"
+failedToggleTitle = "切换失败<br>一个或多个即插即用模组"
+okButton = "好的"
+
+[js.settings.serverListing]
+mainServer = "主服务器"
+
+[js.settings.java]
+selectedJava = "已选择：Java {version}（{vendor}）"
+invalidSelection = "无效的选择"
+requiresJava = "需要 64 位的 Java {major}。"
+availableOptions = "Java {major} 的可用选项（HotSpot VM）"
+
+[js.settings.about]
+preReleaseTitle = "预发布版"
+stableReleaseTitle = "稳定版"
+releaseNotesFailed = "发行说明加载失败。"
+
+[js.settings.updates]
+newReleaseTitle = "有新的正式版可用"
+newPreReleaseTitle = "有新的预发布版可用"
+downloadingButton = "正在下载.."
+downloadButton = "从 GitHub 下载<span style=\"font-size: 10px;color: gray;text-shadow: none !important;\">关闭启动器并运行 dmg 以完成更新。</span>"
+latestVersionTitle = "您正在使用最新版本"
+checkForUpdatesButton = "检查更新"
+checkingForUpdatesButton = "正在检查更新.."
+
+[js.settings.msftLogin]
+errorTitle = "Microsoft 登录失败"
+errorMessage = "我们无法验证您的 Microsoft 账号。请重试。"
+okButton = "确定"
+
+[js.uibinder.startup]
+fatalErrorTitle = "致命错误：无法加载分发索引"
+fatalErrorMessage = "无法连接到我们的服务器以下载分发索引，也没有可加载的本地副本。<br><br>分发索引是提供最新服务器信息的重要文件，没有它启动器将无法启动。请确保您已连接到互联网，然后重新启动应用程序。"
+closeButton = "关闭"
+
+[js.uibinder.validateAccount]
+failedMessageTitle = "刷新登录失败"
+failedMessage = "我们无法刷新 <strong>{account}</strong> 的登录状态。请选择其他账号或重新登录。"
+failedMessageSelectAnotherAccount = "我们无法刷新 <strong>{account}</strong> 的登录状态。请重新登录。"
+loginButton = "登录"
+selectAnotherAccountButton = "选择其他账号"
+
+[js.uicore.autoUpdate]
+checkingForUpdateButton = "正在检查更新..."
+installNowButton = "立即安装"
+checkForUpdatesButton = "检查更新"
+
+[js.auth.microsoft.error]
+noProfileTitle = "登录时出错：<br>尚未创建档案"
+noProfileDesc = "您的 Microsoft 账号尚未设置 Minecraft 档案。如果您最近购买了游戏或通过 Xbox Game Pass 兑换了游戏，您需要在 <a href=\"https://minecraft.net/\">Minecraft.net</a> 上设置档案。<br><br>如果您还没有购买游戏，也可以在 <a href=\"https://minecraft.net/\">Minecraft.net</a> 上购买。"
+noXboxAccountTitle = "登录时出错：<br>没有 Xbox 账号"
+noXboxAccountDesc = "您的 Microsoft 账号未关联任何 Xbox 账号。"
+xblBannedTitle = "登录时出错：<br>Xbox Live 不可用"
+xblBannedDesc = "您的 Microsoft 账号所在的国家或地区无法使用 Xbox Live，或已被封禁。"
+under18Title = "登录时出错：<br>需要家长批准"
+under18Desc = "未满 18 岁的用户账号必须由成年人添加到家庭组中。"
+unknownTitle = "登录时发生未知错误"
+unknownDesc = "发生了未知错误。请查看控制台了解详情。"
+
+[js.auth.mojang.error]
+methodNotAllowedTitle = "内部错误：<br>方法不被允许"
+methodNotAllowedDesc = "方法不被允许。请报告此错误。"
+notFoundTitle = "内部错误：<br>未找到"
+notFoundDesc = "未找到身份验证端点。请报告此问题。"
+accountMigratedTitle = "登录时出错：<br>账号已迁移"
+accountMigratedDesc = "您尝试使用已迁移的账号登录。请改用账号邮箱作为用户名重试。"
+invalidCredentialsTitle = "登录时出错：<br>凭据无效"
+invalidCredentialsDesc = "您输入的邮箱或密码不正确。请重试。"
+tooManyAttemptsTitle = "登录时出错：<br>尝试次数过多"
+tooManyAttemptsDesc = "该账号近期登录尝试次数过多。请稍后重试。"
+invalidTokenTitle = "登录时出错：<br>令牌无效"
+invalidTokenDesc = "所提供的访问令牌无效。"
+tokenHasProfileTitle = "登录时出错：<br>令牌已关联档案"
+tokenHasProfileDesc = "访问令牌已分配档案。目前尚不支持选择档案。"
+credentialsMissingTitle = "登录时出错：<br>缺少凭据"
+credentialsMissingDesc = "未提交用户名或密码，或者密码少于 3 个字符。"
+invalidSaltVersionTitle = "登录时出错：<br>Salt 版本无效"
+invalidSaltVersionDesc = "Salt 版本无效。"
+unsupportedMediaTypeTitle = "内部错误：<br>不支持的媒体类型"
+unsupportedMediaTypeDesc = "不支持的媒体类型。请报告此错误。"
+accountGoneTitle = "登录时出错：<br>账号已迁移"
+accountGoneDesc = "该账号已迁移至 Microsoft 账号。请使用 Microsoft 登录。"
+unreachableTitle = "登录时出错：<br>无法连接"
+unreachableDesc = "无法连接到身份验证服务器。请确认服务器在线，且您已连接到互联网。"
+gameNotPurchasedTitle = "登录时出错：<br>未购买游戏"
+gameNotPurchasedDesc = "您尝试登录的账号尚未购买 Minecraft。您可以在 <a href=\"https://minecraft.net/\">Minecraft.net</a> 购买。"
+unknownErrorTitle = "登录时发生未知错误"
+unknownErrorDesc = "发生了未知错误。请查看控制台了解详情。"

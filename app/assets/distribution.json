@@ -1,0 +1,147 @@
+{
+    "version": "1.0.0",
+    "news": "https://barkan.kr/community?category=%EA%B3%B5%EC%A7%80",
+    "resourcePack": {
+        "manifestUrl": "https://barkan.kr/resourcepack/current.json",
+        "fileName": "barkan-resourcepack.zip"
+    },
+    "clientMods": [
+        {
+            "name": "Sodium",
+            "url": "https://cdn.modrinth.com/data/AANobbMI/versions/rkdTcxoT/sodium-fabric-0.8.14%2Bmc1.21.11.jar",
+            "fileName": "sodium-fabric-0.8.14+mc1.21.11.jar"
+        },
+        {
+            "name": "Iris",
+            "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/ka9PDlsN/iris-fabric-1.10.8%2Bmc1.21.11.jar",
+            "fileName": "iris-fabric-1.10.8+mc1.21.11.jar"
+        }
+    ],
+    "shaders": {
+        "low": {
+            "name": "Complementary Unbound r5.9.3",
+            "url": "https://cdn.modrinth.com/data/R6NEzAwj/versions/B1kyfoUZ/ComplementaryUnbound_r5.9.3.zip",
+            "fileName": "barkan-shaders-low.zip"
+        },
+        "high": {
+            "name": "Sildur's Vibrant Shaders 2.02 Extreme",
+            "url": "https://cdn.modrinth.com/data/z8EjLYqN/versions/J4RlzpKF/Sildur%27s%20Vibrant%20Shaders%20v2.02%20Extreme.zip",
+            "fileName": "barkan-shaders-high.zip"
+        }
+    },
+    "servers": [
+        {
+            "id": "barkan",
+            "name": "바르칸 열도",
+            "description": "바르칸 열도 서버에 접속합니다.",
+            "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzJiNWY4ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBlMWMyYiIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIHJ4PSIyMCIgZmlsbD0idXJsKCNnKSIvPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjUwIiByPSIyNiIgZmlsbD0iI2U4YzI2YSIvPgo8cGF0aCBkPSJNMCA4OGMxOCAwIDI2LTEwIDQ0LTEwczI2IDEwIDQ0IDEwIDIyLTYgNDAtOHY0OEgweiIgZmlsbD0iIzEyMjkzZiIvPgo8cGF0aCBkPSJNOCA5NmMxNiAwIDI0LTkgNDAtOXMyNCA5IDQwIDkgMjQtNiA0MC03IiBmaWxsPSJub25lIiBzdHJva2U9IiM0ZjlhZDYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg==",
+            "version": "1.0.0",
+            "address": "barkan.kr",
+            "minecraftVersion": "1.21.11",
+            "mainServer": true,
+            "autoconnect": true,
+            "javaOptions": {
+                "supported": "21.x",
+                "suggestedMajor": 21,
+                "ram": {
+                    "recommended": 4096,
+                    "minimum": 2048
+                }
+            },
+            "modules": [
+                {
+                    "id": "net.fabricmc:fabric-loader:0.19.5",
+                    "name": "Fabric Loader 0.19.5",
+                    "type": "Fabric",
+                    "artifact": {
+                        "size": 1984980,
+                        "MD5": "23bf6a8c5ba938db7d13959a2630357f",
+                        "url": "https://maven.fabricmc.net/net/fabricmc/fabric-loader/0.19.5/fabric-loader-0.19.5.jar"
+                    },
+                    "subModules": [
+                        {
+                            "id": "org.ow2.asm:asm:9.10.1",
+                            "name": "Fabric (asm)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 126151,
+                                "MD5": "9cb72080438acf27f2607002e1444a7b",
+                                "url": "https://maven.fabricmc.net/org/ow2/asm/asm/9.10.1/asm-9.10.1.jar"
+                            }
+                        },
+                        {
+                            "id": "org.ow2.asm:asm-analysis:9.10.1",
+                            "name": "Fabric (asm-analysis)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 35140,
+                                "MD5": "6dd9011ec87f65e4b2e14e938c4118e4",
+                                "url": "https://maven.fabricmc.net/org/ow2/asm/asm-analysis/9.10.1/asm-analysis-9.10.1.jar"
+                            }
+                        },
+                        {
+                            "id": "org.ow2.asm:asm-commons:9.10.1",
+                            "name": "Fabric (asm-commons)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 74840,
+                                "MD5": "8eee0b1bdd046baf472eb83dd5e6bb44",
+                                "url": "https://maven.fabricmc.net/org/ow2/asm/asm-commons/9.10.1/asm-commons-9.10.1.jar"
+                            }
+                        },
+                        {
+                            "id": "org.ow2.asm:asm-tree:9.10.1",
+                            "name": "Fabric (asm-tree)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 51958,
+                                "MD5": "62541e1dc62331408ef31317555bf4fa",
+                                "url": "https://maven.fabricmc.net/org/ow2/asm/asm-tree/9.10.1/asm-tree-9.10.1.jar"
+                            }
+                        },
+                        {
+                            "id": "org.ow2.asm:asm-util:9.10.1",
+                            "name": "Fabric (asm-util)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 95628,
+                                "MD5": "d0892ecb209867805e7d2418e5dc6c42",
+                                "url": "https://maven.fabricmc.net/org/ow2/asm/asm-util/9.10.1/asm-util-9.10.1.jar"
+                            }
+                        },
+                        {
+                            "id": "net.fabricmc:sponge-mixin:0.17.4+mixin.0.8.7",
+                            "name": "Fabric (sponge-mixin)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 1539080,
+                                "MD5": "9e33b145b2a46fbc70daf532e3705066",
+                                "url": "https://maven.fabricmc.net/net/fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/sponge-mixin-0.17.4+mixin.0.8.7.jar"
+                            }
+                        },
+                        {
+                            "id": "net.fabricmc:intermediary:1.21.11",
+                            "name": "Fabric (intermediary)",
+                            "type": "Library",
+                            "artifact": {
+                                "size": 797685,
+                                "MD5": "54a87ea75e373bc39b2d36df201231ea",
+                                "url": "https://maven.fabricmc.net/net/fabricmc/intermediary/1.21.11/intermediary-1.21.11.jar"
+                            }
+                        },
+                        {
+                            "id": "fabric-loader-0.19.5-1.21.11",
+                            "name": "Fabric (version.json)",
+                            "type": "VersionManifest",
+                            "artifact": {
+                                "size": 2865,
+                                "MD5": "b4344717ed52ebe6e3df64221c38b9a4",
+                                "url": "https://meta.fabricmc.net/v2/versions/loader/1.21.11/0.19.5/profile/json"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

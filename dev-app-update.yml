@@ -1,0 +1,19 @@
+# =============================================================================
+# Development auto-update feed (used only by `npm start`).
+#
+# NOTE: In a development environment the launcher never initialises the
+# auto-updater, so this file is inert. It exists so that the file referenced by
+# index.js is present.
+#
+# To ship launcher updates to your players you need a place to host them:
+#   1. Create a GitHub repository for this launcher (or any electron-builder
+#      publish provider, e.g. a generic HTTPS endpoint).
+#   2. Put the matching credentials below and add a `publish` block to
+#      electron-builder.yml.
+#   3. Remove `publish: null` from electron-builder.yml.
+# See README.md ("자동 업데이트") for the full walkthrough.
+# =============================================================================
+
+provider: github
+owner: your-github-user
+repo: barkan-launcher
