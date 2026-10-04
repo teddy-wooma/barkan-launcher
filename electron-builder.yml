@@ -15,11 +15,14 @@ compression: 'maximum'
 # the build faster and avoids requiring a full native toolchain.
 npmRebuild: false
 
-# Auto-update is intentionally not configured yet. Because there is no
-# `repository`/`publish` target, the launcher will not offer to install updates.
-# See README.md ("자동 업데이트") for how to publish releases to your own
-# GitHub repository and enable it.
-publish: null
+# 자동 업데이트. GitHub 릴리즈를 최신 버전 피드로 씁니다.
+# 이 설정이 있으면 electron-builder 가 패키지 안에 app-update.yml 을,
+# dist/ 안에 latest.yml 을 만듭니다. 런처는 실행할 때 latest.yml 을 읽어
+# 최신 태그와 비교하고, 새 버전이 있으면 내려받아 설치합니다.
+publish:
+  provider: github
+  owner: teddy-wooma
+  repo: barkan-launcher
 
 files:
   - '!{dist,.gitignore,.vscode,docs,dev-app-update.yml,.nvmrc,eslint.config.mjs}'
