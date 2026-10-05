@@ -516,27 +516,36 @@ function modrinthSlug(url) {
 }
 
 async function resolveModrinthVersion(slug) {
-    const query = `loaders=${encodeURIComponent(JSON.stringify([MOD_LOADER]))}`
+    const base = `loaders=${encodeURIComponent(JSON.stringify([MOD_LOADER]))}`
         + `&game_versions=${encodeURIComponent(JSON.stringify([MOD_GAME_VERSION]))}`
-        + '&version_type=release'
-    const list = await fetchJson(`${MODRINTH_API}/project/${encodeURIComponent(slug)}/version?${query}`)
-    if(!Array.isArray(list) || list.length === 0){
-        return null
+
+    // 릴리즈를 먼저 찾고, 없으면 베타를 씁니다.
+    // 나중에 릴리즈가 나오면 버전 번호가 달라지므로 자동으로 갈아탑니다.
+    for(const channel of ['release', 'beta']){
+        const list = await fetchJson(
+            `${MODRINTH_API}/project/${encodeURIComponent(slug)}/version?${base}&version_type=${channel}`
+        )
+        if(!Array.isArray(list) || list.length === 0){
+            continue
+        }
+
+        const version = list[0]
+        const files = Array.isArray(version.files) ? version.files : []
+        const file = files.find(f => f.primary === true) || files[0]
+        if(file == null || !file.url){
+            continue
+        }
+
+        return {
+            version: String(version.version_number || ''),
+            fileName: path.basename(file.filename),
+            url: file.url,
+            size: Number(file.size || 0),
+            channel
+        }
     }
 
-    const version = list[0]
-    const files = Array.isArray(version.files) ? version.files : []
-    const file = files.find(f => f.primary === true) || files[0]
-    if(file == null || !file.url){
-        return null
-    }
-
-    return {
-        version: String(version.version_number || ''),
-        fileName: path.basename(file.filename),
-        url: file.url,
-        size: Number(file.size || 0)
-    }
+    return null
 }
 
 async function ensureServerEntry(directory, address) {
@@ -724,6 +733,31 @@ ipcMain.handle('syncMods', async (event, options) => {
             if(inDisabled && !inMods){
                 await moveFileIfExists(path.join(disabledDir, fileName), path.join(modsDir, fileName))
                 item.status = 'installed'
+                items.push(item)
+                continue
+            }
+
+            // 필수 모드는 자동으로 최신 버전에 맞춥니다.
+            // 선택 모드는 그대로 두고, 사용자가 직접 업데이트 버튼을 누릅니다.
+            if(mod.required && item.version != null && info.version != null && item.version !== info.version){
+                const target = path.join(modsDir, info.fileName)
+                if(fileName !== info.fileName){
+                    await fs.promises.rm(path.join(modsDir, fileName), { force: true })
+                }
+                await fs.promises.rm(target, { force: true })
+                await downloadToFile(info.url, target)
+                await writeModState(statePath, {
+                    slug,
+                    name: mod.name,
+                    version: info.version,
+                    fileName: info.fileName,
+                    size: info.size
+                })
+                console.log(`[Mods] 필수 모드를 자동 업데이트했습니다: ${mod.name} (${item.version} -> ${info.version})`)
+                item.status = 'installed'
+                item.version = info.version
+                item.fileName = info.fileName
+                item.autoUpdated = true
                 items.push(item)
                 continue
             }
