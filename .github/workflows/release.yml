@@ -17,7 +17,9 @@ jobs:
     strategy:
       # 한쪽 플랫폼이 실패해도 다른 쪽은 계속 진행합니다.
       fail-fast: false
-      matrix:
+      # 두 플랫폼이 같은 릴리즈에 올리므로 동시에 실행하면 자산이 유실됩니다.
+      # 순서대로 실행해 서로 덮어쓰지 않게 합니다.
+      max-parallel: 1      matrix:
         include:
           - os: windows-latest
             flag: '-w'
