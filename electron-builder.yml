@@ -88,6 +88,9 @@ mac:
         - 'arm64'
   artifactName: '${productName}-setup-${version}-${arch}.${ext}'
   category: 'public.app-category.games'
+  # latest-mac.yml 에도 같은 릴리즈 노트를 넣습니다.
+  releaseInfo:
+    releaseNotesFile: 'release-notes-win.md'
 
 # Linux Configuration
 linux: 
