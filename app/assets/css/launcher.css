@@ -3181,6 +3181,8 @@ input:checked + .toggleSwitchSlider:before {
 #infoPanel {
     position: fixed;
     top: 150px;
+    /* 소식 화면을 열고 닫을 때 문단이 위아래로 함께 움직이도록 합니다. */
+    transition: top 2s ease;
     z-index: 300;
     display: flex;
     flex-direction: column;
@@ -4009,28 +4011,26 @@ body {
 }
 
 #loadCenterImage {
-    position: absolute;
+    /* 회전하던 텍스트 이미지를 없앴으므로 이 아이콘이 홀로 남습니다.
+       absolute 로 두면 컨테이너 높이가 0 이 되어 배치가 무너집니다. */
     width: 277px;
     height: auto;
 }
 
-#loadSpinnerImage {
-    width: 280px;
-    height: auto;
-    z-index: 400;
-}
 
-@keyframes rotating {
-    from {
-        transform: rotate(0deg);
+/* 로딩 중임을 아이콘 밝기로 보여줍니다.
+   (예전에는 LoadingText.png 가 빙글빙글 돌았습니다) */
+@keyframes loadingFade {
+    0%, 100% {
+        opacity: 0.25;
     }
-    to {
-        transform: rotate(360deg);
+    50% {
+        opacity: 1;
     }
 }
 
 .rotating {
-    animation: rotating 10s linear infinite;
+    animation: loadingFade 2s ease-in-out infinite;
 }
 /* 업데이트 릴리즈 노트 (마크다운을 HTML 로 바꿔 넣습니다) */
 #settingsTabUpdate .settingsChangelogText h3,
@@ -4083,8 +4083,8 @@ body {
     position: relative;
     z-index: 600;
     padding: 8px 14px;
-    background: rgba(8, 12, 18, 0.72);
-    border: 1px solid rgba(226, 173, 103, 0.55);
+    background: rgba(8, 12, 18, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: 4px;
     font-family: 'Avenir Medium';
     font-size: 13px;
@@ -4110,4 +4110,259 @@ body {
 #updateNoticeButton:disabled {
     opacity: 0.55;
     cursor: default;
+}
+/* ===== 플레이 버튼·세이더 강조 (가독성) =====
+   배경이 밝은 하늘·바다라 흰 글자만으로는 묻혔습니다.
+   런처 강조색(#e2ad67 골드)으로 버튼을 만들어 눈에 띄게 합니다. */
+
+#launch_button {
+    padding: 11px 44px;
+    background: linear-gradient(135deg, #e2ad67 0%, #c8913f 100%);
+    border: 1px solid rgba(255, 222, 168, 0.75);
+    border-radius: 7px;
+    color: #1b1206;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-shadow: none;
+    box-shadow: 0 4px 18px rgba(226, 173, 103, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: filter 0.18s ease, box-shadow 0.22s ease, transform 0.12s ease;
+}
+
+#launch_button:hover,
+#launch_button:focus {
+    filter: brightness(1.1);
+    box-shadow: 0 6px 26px rgba(226, 173, 103, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+    text-shadow: none;
+}
+
+#launch_button:active {
+    filter: brightness(0.95);
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(226, 173, 103, 0.4);
+}
+
+#launch_button:disabled {
+    color: #1b1206;
+    filter: grayscale(0.45) brightness(0.85);
+}
+
+/* 세이더 토글 - 어두운 박스로 또렷하게 */
+#shaderToggle {
+    padding: 7px 12px;
+    background: rgba(8, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+#shaderToggle:hover,
+#shaderToggle:focus {
+    border-color: rgba(255, 255, 255, 0.36);
+    color: #ffffff;
+}
+
+#shaderToggle[aria-pressed="true"] {
+    background: rgba(226, 173, 103, 0.2);
+    border-color: rgba(226, 173, 103, 0.85);
+    color: #ffffff;
+}
+
+.shaderQualityButton {
+    padding: 6px 13px;
+    background: rgba(8, 12, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.shaderQualityButton:hover {
+    border-color: rgba(255, 255, 255, 0.36);
+    color: #ffffff;
+}
+
+.shaderQualityButton.selected,
+.shaderQualityButton.active,
+.shaderQualityButton[active],
+.shaderQualityButton[aria-pressed="true"] {
+    background: rgba(226, 173, 103, 0.85);
+    border-color: rgba(255, 222, 168, 0.9);
+    color: #1b1206;
+    font-weight: bold;
+}
+/* ===== 서버 이름 버튼 자리를 PLAY 에 넘깁니다 =====
+   landing.js 가 #server_selection_button 을 직접 참조하고 null 검사가 없어서
+   DOM 에서 지우면 오류가 납니다. 그래서 숨기기만 하고 자리만 비웁니다. */
+#launch_content #server_selection_button,
+#launch_content > .bot_divider {
+    display: none;
+}
+
+/* 비워진 공간만큼 PLAY 를 넓혀 시원하게 씁니다. */
+#launch_button {
+    min-width: 268px;
+}
+/* ===== 세이더 품질 버튼을 토글 옆에 나란히 =====
+   원래 #shaderQuality 는 position: absolute; top: 100% 라서 토글 "아래"에 깔렸고,
+   PLAY 버튼이 넓어지면서 그 아래를 덮어 가려졌습니다.
+   절대 배치를 풀어 토글 오른쪽에 나란히 놓습니다. */
+#shaderBar {
+    gap: 8px;
+}
+
+#shaderQuality {
+    position: static;
+    margin-top: 0;
+    gap: 4px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+}
+/* ===== 창 끝 여백 정리 =====
+   정보 패널은 858px 중앙 정렬이라 양옆 여백이 61px 입니다.
+   오른쪽 버튼들도 같은 선(x=919)에 맞추고 크기를 조금 줄입니다. */
+#launch_button {
+    min-width: 260px;     /* 657 + 260 = 917, 패널 끝 919 와 거의 일치 */
+    padding: 9px 28px;    /* 높이 54 → 약 48px */
+    font-size: 20px;
+    letter-spacing: 3px;
+}
+
+#shaderToggle {
+    padding: 6px 11px;
+    font-size: 12px;
+}
+
+.shaderQualityButton {
+    padding: 5px 11px;
+    font-size: 11px;
+}
+/* ===== 세부 여백 조정 ===== */
+/* 품질 버튼(저사양/고사양) 높이를 세이더 토글과 똑같이 맞춥니다. */
+.shaderQualityButton {
+    padding: 0 11px;
+    height: 32px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* PLAY 아래에 창 바닥과의 여백을 둡니다. (기존 7px 은 너무 붙어 있었습니다) */
+#launch_button {
+    margin-bottom: 22px;
+}
+/* ===== 최종 정렬 ===== */
+/* 토글과 품질 버튼 높이를 같은 값으로 고정합니다.
+   (토글은 내부 스위치·글자 높이 때문에 34px, 품질은 32px 로 달랐습니다) */
+#shaderToggle,
+.shaderQualityButton {
+    height: 32px;
+    min-height: 32px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* PLAY 아래 창 바닥 여백을 넉넉하게 둡니다. */
+#launch_button {
+    margin-bottom: 40px;
+}
+/* ===== 바닥 여백 마무리 =====
+   #launch_button 의 margin 만으로는 컨테이너가 그 자리를 흡수해서
+   실제 여백이 17px 밖에 늘지 않았습니다. 감싸는 #launch_content 에도 줍니다. */
+#launch_content {
+    margin-bottom: 16px;
+}
+
+/* 품질 버튼 글자가 답답하지 않게 좌우 여백을 조금 늘립니다. */
+.shaderQualityButton {
+    padding: 0 14px;
+}
+/* ===== 창 바닥 여백 확보 =====
+   #launch_button 의 margin 은 컨테이너가 흡수해서 실제 여백이 늘지 않았습니다.
+   우측 하단 영역 자체에 padding 을 주어 확실히 띄웁니다. */
+#landingContainer > #lower > #right > .bot_wrapper {
+    padding-bottom: 18px;
+    box-sizing: border-box;
+}
+/* ===== 우측 버튼을 위로 =====
+   PLAY 가 창 바닥에 너무 붙어 있었습니다. 우측 하단 묶음 자체를 올립니다.
+   세이더바가 정보 패널에 닿지 않도록 문단도 함께 조금 올립니다. */
+#infoPanel {
+    top: 120px;
+}
+
+#landingContainer > #lower > #right > .bot_wrapper {
+    position: relative;
+    top: -30px;
+}
+/* ===== 우측 끝선 통일 + PLAY 글자 강조 ===== */
+/* 품질 버튼 좌우 여백을 늘려 오른쪽 끝을 PLAY 와 같은 선(x=917)에 맞춥니다. */
+.shaderQualityButton {
+    padding: 0 18px;
+}
+
+/* PLAY 글자를 더 굵고 두껍게.
+   font-weight 는 이미 900(최대) 이라 크기를 키우고 외곽선을 겹쳐 두께를 줍니다. */
+#launch_button {
+    font-size: 24px;
+    font-weight: 900;
+    -webkit-text-stroke: 0.7px #1b1206;
+    letter-spacing: 4px;
+}
+/* ===== 세이더 버튼들을 하나로 이어붙입니다 =====
+   토글·저사양·고사양 사이의 간격을 없애고 모서리를 정리해
+   한 덩어리 세그먼트 컨트롤처럼 보이게 합니다. */
+#shaderBar,
+#shaderQuality {
+    gap: 0;
+}
+
+/* 토글은 왼쪽 모서리만 둥글게 하고 오른쪽 테두리는 품질 버튼과 공유합니다. */
+#shaderToggle {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.shaderQualityButton {
+    border-radius: 0;
+    /* 없어진 간격(8+4=12px)만큼 좌우 여백을 늘려 오른쪽 끝선을 유지합니다. */
+    padding: 0 21px;
+}
+
+/* 두 번째 품질 버튼의 왼쪽 테두리는 첫 번째 버튼과 겹치므로 지웁니다. */
+.shaderQualityButton + .shaderQualityButton {
+    border-left: none;
+}
+
+/* 마지막 버튼만 오른쪽 모서리를 둥글게 */
+.shaderQualityButton:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+/* ===== 이어진 그룹 안에서 경계를 확실히 =====
+   border 대신 box-shadow 로 그려서 폭이 1px 도 변하지 않게 합니다. */
+#shaderToggle {
+    border-right: none;
+    /* 토글 | 저사양 경계 */
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.28);
+}
+
+.shaderQualityButton + .shaderQualityButton {
+    border-left: none;
+    /* 저사양 | 고사양 경계 */
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.28);
+}
+
+/* 선택된 버튼은 골드로 채워지므로 경계가 더 또렷합니다. */
+.shaderQualityButton.selected {
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.35);
 }
