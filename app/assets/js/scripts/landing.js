@@ -1672,3 +1672,47 @@ setupInfoPanel()
 loadInfoMarket()
 loadInfoRanking()
 loadInfoRare()
+
+// 런처 업데이트가 있으면 홈 화면 상단 가운데에 알립니다.
+// 설정 → 업데이트 탭까지 들어가지 않아도 바로 설치할 수 있게 합니다.
+function showLandingUpdateNotice(info, downloaded){
+    const notice = document.getElementById('updateNotice')
+    if(notice == null){
+        return
+    }
+
+    const version = document.getElementById('updateNoticeVersion')
+    if(version != null && info != null && info.version != null){
+        version.textContent = `v${info.version}`
+    }
+
+    const button = document.getElementById('updateNoticeButton')
+    if(button != null){
+        button.textContent = downloaded
+            ? Lang.queryJS('uicore.autoUpdate.installNowButton')
+            : Lang.queryJS('settings.updates.downloadingButton')
+        button.disabled = !downloaded
+        button.onclick = downloaded ? () => {
+            require('electron').ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
+        } : null
+    }
+
+    notice.style.display = ''
+}
+
+function hideLandingUpdateNotice(){
+    const notice = document.getElementById('updateNotice')
+    if(notice != null){
+        notice.style.display = 'none'
+    }
+}
+
+ipcRenderer.on('autoUpdateNotification', (event, arg, info) => {
+    if(arg === 'update-available'){
+        showLandingUpdateNotice(info, false)
+    } else if(arg === 'update-downloaded'){
+        showLandingUpdateNotice(info, true)
+    } else if(arg === 'update-not-available' || arg === 'realerror'){
+        hideLandingUpdateNotice()
+    }
+})

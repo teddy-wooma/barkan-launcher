@@ -13,7 +13,7 @@ shadersLabel = "셰이더팩"
 shaderLow = "저사양"
 shaderHigh = "고사양"
 
-updateAvailableTooltip = "Update Available"
+updateAvailableTooltip = "새 버전이 있습니다"
 usernamePlaceholder = "Username"
 usernameEditButton = "Edit"
 settingsTooltip = "Settings"

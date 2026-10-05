@@ -4066,3 +4066,48 @@ body {
 #landingContainer > #lower > #left {
     z-index: 600;
 }
+
+/* 홈 화면 상단 가운데 업데이트 알림 (landing.ejs 의 #upper > #content)
+   정보 패널(#infoPanel)이 top: 150px 부터 시작하므로 그 위쪽에 놓습니다. */
+#landingContainer > #upper > #content {
+    align-items: flex-start;
+    justify-content: center;
+    /* 정보 패널이 top: 150px 이라 알림(높이 46px)이 끝나고도 여유가 있어야 합니다. */
+    padding-top: 70px;
+}
+#updateNotice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* 정보 패널의 부모(#center #content)가 z-index: 500 이라 그보다 위에 둡니다. */
+    position: relative;
+    z-index: 600;
+    padding: 8px 14px;
+    background: rgba(8, 12, 18, 0.72);
+    border: 1px solid rgba(226, 173, 103, 0.55);
+    border-radius: 4px;
+    font-family: 'Avenir Medium';
+    font-size: 13px;
+    color: #fff;
+}
+#updateNoticeVersion {
+    color: #e2ad67;
+    font-weight: bold;
+}
+#updateNoticeButton {
+    padding: 4px 12px;
+    border: 1px solid rgba(226, 173, 103, 0.65);
+    border-radius: 3px;
+    background: rgba(226, 173, 103, 0.22);
+    color: #fff;
+    font-family: 'Avenir Medium';
+    font-size: 12px;
+    cursor: pointer;
+}
+#updateNoticeButton:hover:enabled {
+    background: rgba(226, 173, 103, 0.4);
+}
+#updateNoticeButton:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
