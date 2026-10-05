@@ -2890,6 +2890,10 @@ input:checked + .toggleSwitchSlider:before {
     position: relative;
     display: flex;
     cursor: pointer;
+    /* 안에 있는 툴팁이 홈 정보 패널(#infoPanel, z-index: 300) 위에 오도록 합니다.
+       position: relative 인 요소에 z-index 를 주면 스태킹 컨텍스트가 되어
+       자식 툴팁도 같은 층에 놓입니다. */
+    z-index: 600;
 }
 
 #mojang_status_icon {
@@ -4054,4 +4058,11 @@ body {
 }
 #settingsTabUpdate .settingsChangelogText strong {
     font-weight: bold;
+}
+
+/* 서버 상태·모장 상태 툴팁이 가운데 정보 패널 위로 오게 합니다.
+   정보 패널의 부모인 #center #content 가 z-index: 500 이라
+   같은 층에 있는 #left 자체를 그보다 위로 올립니다. */
+#landingContainer > #lower > #left {
+    z-index: 600;
 }
