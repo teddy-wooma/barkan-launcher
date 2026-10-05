@@ -4028,3 +4028,30 @@ body {
 .rotating {
     animation: rotating 10s linear infinite;
 }
+/* 업데이트 릴리즈 노트 (마크다운을 HTML 로 바꿔 넣습니다) */
+#settingsTabUpdate .settingsChangelogText h3,
+#settingsTabUpdate .settingsChangelogText h4,
+#settingsTabUpdate .settingsChangelogText h5,
+#settingsTabUpdate .settingsChangelogText h6 {
+    margin: 12px 0 4px;
+    font-size: 1em;
+}
+#settingsTabUpdate .settingsChangelogText p {
+    margin: 4px 0;
+}
+#settingsTabUpdate .settingsChangelogText ul,
+#settingsTabUpdate .settingsChangelogText ol {
+    margin: 4px 0;
+    padding-left: 18px;
+}
+#settingsTabUpdate .settingsChangelogText li {
+    margin: 2px 0;
+}
+#settingsTabUpdate .settingsChangelogText code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+}
+#settingsTabUpdate .settingsChangelogText strong {
+    font-weight: bold;
+}

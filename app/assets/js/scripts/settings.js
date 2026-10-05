@@ -1379,12 +1379,68 @@ function settingsUpdateButtonStatus(text, disabled = false, handler = null){
 }
 
 
+// 릴리즈 노트는 마크다운으로 씁니다.
+// 마크다운 렌더러 의존성을 추가하지 않고, 제목·목록·강조·코드만 처리합니다.
+// 입력은 먼저 이스케이프하므로 노트에 HTML 을 넣어도 그대로 글자로 보입니다.
+function renderReleaseNotes(text){
+    const escape = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const inline = s => escape(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+
+    const out = []
+    let list = null
+    const closeList = () => {
+        if(list != null){
+            out.push(`</${list}>`)
+            list = null
+        }
+    }
+
+    String(text || '').split(/\r?\n/).forEach(raw => {
+        const line = raw.trim()
+
+        if(line === ''){
+            closeList()
+            return
+        }
+
+        const heading = /^(#{1,6})\s+(.*)$/.exec(line)
+        if(heading != null){
+            closeList()
+            const level = Math.min(heading[1].length + 1, 6)
+            out.push(`<h${level}>${inline(heading[2])}</h${level}>`)
+            return
+        }
+
+        const bullet = /^[-*]\s+(.*)$/.exec(line)
+        const numbered = /^\d+\.\s+(.*)$/.exec(line)
+        if(bullet != null || numbered != null){
+            const kind = bullet != null ? 'ul' : 'ol'
+            if(list !== kind){
+                closeList()
+                out.push(`<${kind}>`)
+                list = kind
+            }
+            out.push(`<li>${inline((bullet || numbered)[1])}</li>`)
+            return
+        }
+
+        closeList()
+        out.push(`<p>${inline(line)}</p>`)
+    })
+
+    closeList()
+    return out.join('')
+}
+
+
 function populateSettingsUpdateInformation(data){
     if(data != null){
         settingsUpdateTitle.innerHTML = isPrerelease(data.version) ? Lang.queryJS('settings.updates.newPreReleaseTitle') : Lang.queryJS('settings.updates.newReleaseTitle')
         settingsUpdateChangelogCont.style.display = null
         settingsUpdateChangelogTitle.innerHTML = data.releaseName
-        settingsUpdateChangelogText.innerHTML = data.releaseNotes
+        settingsUpdateChangelogText.innerHTML = renderReleaseNotes(data.releaseNotes)
         populateVersionInformation(data.version, settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
 
         if(process.platform === 'darwin'){
