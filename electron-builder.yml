@@ -47,6 +47,9 @@ win:
   target: 
     - target: 'nsis'
       arch: 'x64'
+  # 릴리즈 노트로 쓸 파일입니다. GitHub 릴리즈 본문에 그대로 들어갑니다.
+  releaseInfo:
+    releaseNotesFile: 'release-notes-win.md'
 
 # Windows Installer Configuration
 nsis:
