@@ -599,8 +599,22 @@ async function dlAsync(login = true) {
                 showLaunchFailure('리소스팩 준비 실패', packErr.message || '리소스팩을 준비하지 못했습니다.')
                 return
             }
+            let extraPacks = []
+            try {
+                extraPacks = await syncExtraResourcePacks(pb, distro)
+            } catch (extraErr) {
+                loggerLaunchSuite.error('추가 리소스팩을 준비하지 못했습니다.', extraErr)
+                showLaunchFailure('리소스팩 준비 실패', extraErr.message || '리소스팩을 준비하지 못했습니다.')
+                return
+            }
+
+            // 뒤에 있는 팩이 우선순위가 높습니다. 서버 메인팩을 마지막에 둡니다.
+            const packs = [...extraPacks]
             if(packEntry){
-                pb.enableResourcePacks([packEntry])
+                packs.push(packEntry)
+            }
+            if(packs.length > 0){
+                pb.enableResourcePacks(packs)
             }
 
 
@@ -1171,6 +1185,24 @@ function escapeNewsHtml(value){
         .replace(/"/g, '&quot;')
 }
 
+
+// 서버 메인팩과 별개로 함께 켜는 로컬 리소스팩을 준비합니다.
+// 내장 팩(쿠키로 알리는 팩) 계산과는 무관합니다.
+async function syncExtraResourcePacks(pb, distro){
+    const list = distro.rawDistribution.extraResourcePacks || []
+    const entries = []
+
+    for(const pack of list){
+        setLaunchDetails(`리소스팩 준비 중.. ${pack.name || pack.fileName}`)
+        const r = await syncGameFile(pb.gameDir, 'resourcepacks', pack)
+        if(r && r.status === 'failed'){
+            throw new Error(`${pack.name || pack.fileName} 을(를) 내려받지 못했습니다.\n\n${r.reason || ''}`)
+        }
+        entries.push(`file/${pack.fileName}`)
+    }
+
+    return entries
+}
 
 async function syncResourcePackForLaunch(pb, distro){
     const logger = LoggerUtil.getLogger('ResourcePack')

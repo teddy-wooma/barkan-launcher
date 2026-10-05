@@ -5,6 +5,13 @@
         "manifestUrl": "https://barkan.kr/resourcepack/current.json",
         "fileName": "barkan-resourcepack.zip"
     },
+    "extraResourcePacks": [
+        {
+            "name": "피아노 건반",
+            "url": "https://raw.githubusercontent.com/teddy-wooma/FISH_MOD_LIST/main/BarkanPiano-ResourcePack-1.21.11-61Key.zip",
+            "fileName": "BarkanPiano-ResourcePack-1.21.11-61Key.zip"
+        }
+    ],
     "clientMods": [
         {
             "name": "Sodium",

@@ -80,11 +80,14 @@ class ProcessBuilder {
             }
         }
 
-        const added = packs.filter(pack => !current.includes(pack))
-        if(added.length === 0){
+        // 우리가 관리하는 팩은 항상 이 순서로, 목록 맨 뒤에 둡니다.
+        // 마인크래프트는 뒤에 있는 팩을 더 높은 우선순위로 봅니다.
+        const others = current.filter(pack => !packs.includes(pack))
+        const ordered = [...others, ...packs]
+        if(JSON.stringify(ordered) === JSON.stringify(current)){
             return
         }
-        current.push(...added)
+        current = ordered
 
         const value = `${key}:${JSON.stringify(current)}`
         if(index >= 0){
@@ -98,7 +101,7 @@ class ProcessBuilder {
 
         try {
             fs.writeFileSync(optionsPath, lines.join('\n') + '\n', 'utf8')
-            logger.info(`리소스팩을 켰습니다: ${added.join(', ')}`)
+            logger.info(`리소스팩을 켰습니다: ${packs.join(', ')}`)
         } catch (err) {
             logger.warn('options.txt 를 쓰지 못했습니다.', err)
         }
