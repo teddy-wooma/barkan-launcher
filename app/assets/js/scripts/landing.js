@@ -689,6 +689,8 @@ function slide_(up){
     const newsBtn = document.querySelector('#landingContainer > #lower > #center #content')
     const landingContainer = document.getElementById('landingContainer')
     const newsContainer = document.querySelector('#landingContainer > #newsContainer')
+    // 정보 패널은 position: fixed 라서 #upper/#lower 와 따로 움직여야 합니다.
+    const lInfoPanel = document.getElementById('infoPanel')
 
     newsGlideCount++
 
@@ -697,6 +699,9 @@ function slide_(up){
         lCLLeft.style.top = '-200vh'
         lCLCenter.style.top = '-200vh'
         lCLRight.style.top = '-200vh'
+        if(lInfoPanel != null){
+            lInfoPanel.style.top = '-200vh'
+        }
         newsBtn.style.top = '130vh'
         newsContainer.style.top = '0px'
 
@@ -721,6 +726,9 @@ function slide_(up){
         lCLLeft.style.top = '0px'
         lCLCenter.style.top = '0px'
         lCLRight.style.top = '0px'
+        if(lInfoPanel != null){
+            lInfoPanel.style.top = '120px'
+        }
         newsBtn.style.top = '10px'
     }
 }
@@ -1645,25 +1653,8 @@ function setupInfoPanel(){
         })
     })
 
-    // 소식 창이 열리면 정보 패널을 감춥니다. 겹치면 소식이 읽기 어렵습니다.
-    //
-    // display 나 크기로는 알 수 없습니다.
-    //  - #newsContainer 는 평소에도 display:none 이 아니고, 감춰져 있어도 980x530 을 차지합니다.
-    //  - #newsContent 도 평소 높이가 453 이라 크기로 구분되지 않습니다.
-    // 소식 상태의 정답은 이 파일의 newsActive 이고, #newsButton 의 onclick 이
-    // 그것을 뒤집습니다. 그래서 그 클릭에 붙여서 따라갑니다.
-    const newsButton = document.getElementById('newsButton')
-    const panel = document.getElementById('infoPanel')
-    if(newsButton != null && panel != null){
-        const sync = () => {
-            panel.classList.toggle('hidden', newsActive === true)
-        }
-        newsButton.addEventListener('click', () => {
-
-            setTimeout(sync, 0)
-        })
-        sync()
-    }
+    // 소식 창을 열고 닫을 때 정보 패널은 slide_ 가 top 을 움직여 함께 따라갑니다.
+    // (예전에는 여기서 hidden 클래스로 감췄는데, 그러면 슬라이드 대신 즉시 사라졌습니다)
 }
 
 setupInfoPanel()
