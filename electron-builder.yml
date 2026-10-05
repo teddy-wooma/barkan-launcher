@@ -49,7 +49,7 @@ win:
       arch: 'x64'
   # 릴리즈 노트로 쓸 파일입니다. GitHub 릴리즈 본문에 그대로 들어갑니다.
   releaseInfo:
-    releaseNotesFile: 'release-notes-win.md'
+    releaseNotesFile: 'release-notes.md'
 
 # Windows Installer Configuration
 nsis:
@@ -90,7 +90,7 @@ mac:
   category: 'public.app-category.games'
   # latest-mac.yml 에도 같은 릴리즈 노트를 넣습니다.
   releaseInfo:
-    releaseNotesFile: 'release-notes-win.md'
+    releaseNotesFile: 'release-notes.md'
 
 # Linux Configuration
 linux: 
