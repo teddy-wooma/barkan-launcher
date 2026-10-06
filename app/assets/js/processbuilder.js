@@ -145,17 +145,24 @@ class ProcessBuilder {
         const applied = []
 
 
-        if(options.lang){
-            const wanted = `lang:${options.lang}`
-            const index = lines.findIndex(line => line.startsWith('lang:'))
+        // 전용 게임 폴더를 새 사용자로 인식해 표시하는 기본 튜토리얼을 끕니다.
+        // 기존 설치에서 진행 중이던 튜토리얼도 다음 실행 전에 완료 상태로 맞춥니다.
+        const managedOptions = {
+            lang: options.lang,
+            tutorialStep: 'none',
+            joinedFirstServer: 'true'
+        }
+        for(const [key, value] of Object.entries(managedOptions)){
+            const wanted = `${key}:${value}`
+            const index = lines.findIndex(line => line.startsWith(`${key}:`))
             if(index >= 0){
                 if(lines[index] !== wanted){
                     lines[index] = wanted
-                    applied.push(`lang=${options.lang}`)
+                    applied.push(`${key}=${value}`)
                 }
             } else {
                 lines.push(wanted)
-                applied.push(`lang=${options.lang}`)
+                applied.push(`${key}=${value}`)
             }
         }
 
