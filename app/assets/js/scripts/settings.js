@@ -1444,8 +1444,10 @@ function populateSettingsUpdateInformation(data){
         populateVersionInformation(data.version, settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
 
         if(process.platform === 'darwin'){
-            settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadButton'), false, () => {
-                shell.openExternal(data.darwindownload)
+            // 서명 인증서가 없어 electron-updater 로는 설치할 수 없습니다.
+            // 자체 교체 업데이트를 시작합니다. (index.js 의 runMacSelfUpdate)
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, () => {
+                require('electron').ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
             })
         } else {
             settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadingButton'), true)

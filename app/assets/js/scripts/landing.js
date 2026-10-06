@@ -1700,7 +1700,8 @@ function hideLandingUpdateNotice(){
 
 ipcRenderer.on('autoUpdateNotification', (event, arg, info) => {
     if(arg === 'update-available'){
-        showLandingUpdateNotice(info, false)
+        // macOS 는 서명이 없어도 자체 교체로 바로 설치할 수 있습니다.
+        showLandingUpdateNotice(info, process.platform === 'darwin')
     } else if(arg === 'update-downloaded'){
         showLandingUpdateNotice(info, true)
     } else if(arg === 'update-not-available' || arg === 'realerror'){

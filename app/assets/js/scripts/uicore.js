@@ -129,6 +129,9 @@ if(!isDev){
                 }, 1800000)
                 ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
                 break
+            case 'mac-selfupdate-progress':
+                handleMacSelfUpdateProgress(info)
+                break
             case 'realerror':
                 if(info != null && info.code != null){
                     if(info.code === 'ERR_UPDATER_INVALID_RELEASE_FEED'){
@@ -152,6 +155,53 @@ if(!isDev){
 function changeAllowPrerelease(val){
     ipcRenderer.send('autoUpdateAction', 'allowPrereleaseChange', val)
 }
+
+// macOS 자체 교체 업데이트의 진행 상황입니다.
+// 서명 인증서가 없어 electron-updater 로는 설치할 수 없어서
+// dmg 를 직접 받아 앱을 교체합니다. (index.js 의 runMacSelfUpdate)
+function handleMacSelfUpdateProgress(info){
+    const stage = info != null ? info.stage : null
+
+    switch(stage){
+        case 'checking':
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkingForUpdateButton'), true)
+            break
+
+        case 'downloading': {
+            const percent = info.total > 0 ? Math.floor((info.received / info.total) * 100) : 0
+            settingsUpdateButtonStatus(`${Lang.queryJS('settings.updates.downloadingButton')} ${percent}%`, true)
+            break
+        }
+
+        case 'extracting':
+            settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadingButton'), true)
+            break
+
+        case 'installing':
+            // 곧 런처가 종료되고 새 버전이 설치됩니다.
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), true)
+            break
+
+        case 'up-to-date':
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
+            break
+
+        case 'manual':
+            // dmg 를 열어 두었습니다. 사용자가 Applications 로 옮겨야 합니다.
+            loggerAutoUpdater.info('자동 교체를 할 수 없어 dmg 를 열었습니다.', info != null ? info.reason : '')
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
+            break
+
+        case 'failed':
+            loggerAutoUpdater.error('macOS 자체 교체 업데이트 실패', info != null ? info.message : '')
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
+            break
+
+        default:
+            break
+    }
+}
+
 
 function showUpdateUI(info){
 
