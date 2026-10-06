@@ -125,14 +125,18 @@ if(!isDev){
                 break
             case 'ready':
                 updateCheckListener = setInterval(() => {
-                    ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
+                    ipcRenderer.send('autoUpdateAction', process.platform === 'darwin' ? 'checkMacUpdate' : 'checkForUpdate')
                 }, 1800000)
-                ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
+                ipcRenderer.send('autoUpdateAction', process.platform === 'darwin' ? 'checkMacUpdate' : 'checkForUpdate')
                 break
             case 'mac-selfupdate-progress':
                 handleMacSelfUpdateProgress(info)
                 break
             case 'realerror':
+                // 확인이 실패해도 버튼이 "확인 중"에 멈추지 않게 되돌립니다.
+                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false, () => {
+                    ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
+                })
                 if(info != null && info.code != null){
                     if(info.code === 'ERR_UPDATER_INVALID_RELEASE_FEED'){
                         loggerAutoUpdater.info('No suitable releases found.')

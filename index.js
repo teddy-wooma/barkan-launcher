@@ -56,7 +56,15 @@ ipcMain.on('autoUpdateAction', (event, arg, data) => {
             initAutoUpdater(event, data)
             event.sender.send('autoUpdateNotification', 'ready')
             break
+        case 'checkMacUpdate':
+            checkMacUpdate(event)
+            break
         case 'checkForUpdate':
+            if(process.platform === 'darwin'){
+                // macOS 에서는 서명 문제로 electron-updater 확인이 실패할 수 있습니다.
+                checkMacUpdate(event)
+                break
+            }
             autoUpdater.checkForUpdates()
                 .catch(err => {
                     event.sender.send('autoUpdateNotification', 'realerror', err)
@@ -1418,5 +1426,34 @@ async function runMacSelfUpdate(event) {
         if (dmgPath != null) {
             await shell.openPath(dmgPath).catch(() => {})
         }
+    }
+}
+// macOS 는 electron-updater 의 확인이 실패할 수 있어 latest-mac.yml 을 직접 봅니다.
+// 이 확인이 성공해야 "지금 설치" 버튼이 뜨고 자체 교체를 시작할 수 있습니다.
+function extractMacReleaseNotes(text) {
+    const m = /^releaseNotes:\s*"([\s\S]*?)"\s*$/m.exec(text)
+    if (m == null) {
+        return ''
+    }
+    return m[1].replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\"/g, '"')
+}
+
+async function checkMacUpdate(event) {
+    try {
+        event.sender.send('autoUpdateNotification', 'checking-for-update')
+        const latest = await fetchLatestMacRelease()
+
+        if (semver.gt(latest.version, app.getVersion())) {
+            event.sender.send('autoUpdateNotification', 'update-available', {
+                version: latest.version,
+                releaseName: latest.version,
+                releaseNotes: extractMacReleaseNotes(latest.text)
+            })
+        } else {
+            event.sender.send('autoUpdateNotification', 'update-not-available', { version: latest.version })
+        }
+    } catch (err) {
+        console.error('[MacUpdateCheck]', err)
+        event.sender.send('autoUpdateNotification', 'realerror', err)
     }
 }
