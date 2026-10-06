@@ -50,6 +50,11 @@ function initAutoUpdater(event, data) {
 }
 
 ipcMain.on('autoUpdateAction', (event, arg, data) => {
+    // macOS 업데이트 문제를 추적하기 위해 클릭이 도달했는지 먼저 기록합니다.
+    // (로그가 비어 있으면 UI 배선 문제, 찍히면 설치 로직 문제입니다)
+    if(process.platform === 'darwin' && (arg === 'installUpdateNow' || arg === 'checkMacUpdate' || arg === 'checkForUpdate')){
+        macUpdateLog('IPC 수신: ' + arg)
+    }
     switch(arg){
         case 'initAutoUpdater':
             console.log('Initializing auto updater.')
@@ -1378,6 +1383,7 @@ async function runMacSelfUpdate(event) {
     }
 
     let dmgPath = null
+    macUpdateLog('설치 시작 요청 (현재 ' + app.getVersion() + ', arch ' + process.arch + ')')
     try {
         send('mac-selfupdate-progress', { stage: 'checking' })
         const latest = await fetchLatestMacRelease()
@@ -1394,6 +1400,7 @@ async function runMacSelfUpdate(event) {
         }
 
         dmgPath = path.join(os.tmpdir(), fileName)
+        macUpdateLog('내려받기: ' + fileName + ' → ' + dmgPath)
         await downloadMacDmg(entry, dmgPath, (received, total) => {
             send('mac-selfupdate-progress', { stage: 'downloading', received, total })
         })
@@ -1407,7 +1414,9 @@ async function runMacSelfUpdate(event) {
 
         const staged = path.join(os.tmpdir(), 'Barkan Launcher.app.new')
         send('mac-selfupdate-progress', { stage: 'extracting' })
+        macUpdateLog('dmg 해제 중')
         await extractAppFromDmg(dmgPath, staged)
+        macUpdateLog('앱 추출 완료: ' + staged)
 
         send('mac-selfupdate-progress', { stage: 'installing' })
         const appBundle = macAppBundle()
@@ -1418,8 +1427,10 @@ async function runMacSelfUpdate(event) {
             path.join(os.tmpdir(), 'barkan-selfupdate-root.sh'),
             `${appBundle}.bak`], { detached: true, stdio: 'ignore' }).unref()
 
+        macUpdateLog('교체 스크립트 실행: ' + mainPath)
         setTimeout(() => app.quit(), 900)
     } catch (err) {
+        macUpdateLog('실패: ' + err.message)
         console.error('[MacSelfUpdate]', err)
         send('mac-selfupdate-progress', { stage: 'failed', message: err.message })
         // 실패하면 dmg 를 열어 사용자가 직접 설치할 수 있게 합니다.
@@ -1439,21 +1450,38 @@ function extractMacReleaseNotes(text) {
 }
 
 async function checkMacUpdate(event) {
+    macUpdateLog('--- 확인 시작 (현재 ' + app.getVersion() + ') ---')
     try {
         event.sender.send('autoUpdateNotification', 'checking-for-update')
         const latest = await fetchLatestMacRelease()
+        macUpdateLog('latest-mac.yml 버전: ' + latest.version)
 
         if (semver.gt(latest.version, app.getVersion())) {
+            macUpdateLog('새 버전 발견: ' + latest.version)
             event.sender.send('autoUpdateNotification', 'update-available', {
                 version: latest.version,
                 releaseName: latest.version,
                 releaseNotes: extractMacReleaseNotes(latest.text)
             })
         } else {
+            macUpdateLog('최신 버전입니다')
             event.sender.send('autoUpdateNotification', 'update-not-available', { version: latest.version })
         }
     } catch (err) {
+        macUpdateLog('확인 실패: ' + err.message)
         console.error('[MacUpdateCheck]', err)
         event.sender.send('autoUpdateNotification', 'realerror', err)
+    }
+}
+// macOS 업데이트는 패키지 앱에서 콘솔이 보이지 않아 파일로 기록합니다.
+//   macOS: ~/Library/Application Support/Barkan Launcher/logs/mac-update.log
+function macUpdateLog(message) {
+    try {
+        const dir = path.join(app.getPath('userData'), 'logs')
+        fs.mkdirSync(dir, { recursive: true })
+        fs.appendFileSync(path.join(dir, 'mac-update.log'),
+            `[${new Date().toISOString()}] ${message}\n`, 'utf8')
+    } catch (err) {
+        // 로그를 못 써도 동작에는 영향이 없게 합니다.
     }
 }
