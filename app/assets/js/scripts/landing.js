@@ -1356,6 +1356,7 @@ async function syncShadersForLaunch(pb, distro){
     const mods = distro.rawDistribution.clientMods || []
     const shaders = distro.rawDistribution.shaders || {}
     const chosen = shaders[quality]
+    let preparedShaderFileName = null
 
 
     if(!enabled){
@@ -1383,6 +1384,8 @@ async function syncShadersForLaunch(pb, distro){
             const r = await syncGameFile(pb.gameDir, 'shaderpacks', chosen)
             if(r && r.status === 'failed'){
                 failures.push(`${chosen.name}: ${r.reason || '내려받기 실패'}`)
+            } else {
+                preparedShaderFileName = require('./assets/js/cosmeticshadercompat').prepareShaderPack(pb.gameDir, chosen.fileName)
             }
         } catch (err) {
             failures.push(`${chosen.name}: ${err.message}`)
@@ -1399,7 +1402,7 @@ async function syncShadersForLaunch(pb, distro){
         )
     }
 
-    writeIrisProperties(pb.gameDir, chosen ? chosen.fileName : null)
+    writeIrisProperties(pb.gameDir, preparedShaderFileName)
 }
 
 
