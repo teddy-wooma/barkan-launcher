@@ -306,6 +306,12 @@ downloadButton = 'Download from GitHub<span style="font-size: 10px;color: gray;t
 latestVersionTitle = "You Are Running the Latest Version"
 checkForUpdatesButton = "Check for Updates"
 checkingForUpdatesButton = "Checking for Updates.."
+extractingButton = "Preparing update…"
+installingButton = "Installing and restarting…"
+checkFailed = "Could not check for updates. Please try again."
+installFailed = "Could not install the update."
+manualInstallMessage = "The verified installer is open. Quit the launcher and drag Barkan Launcher into Applications, then open it from Applications."
+updateMessageTitle = "Launcher update"
 
 [js.settings.msftLogin]
 errorTitle = "Microsoft Login Failed"

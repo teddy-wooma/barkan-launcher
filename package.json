@@ -1,6 +1,6 @@
 {
   "name": "barkan-launcher",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "productName": "Barkan Launcher",
   "description": "바르칸 열도 전용 마인크래프트 런처",
   "author": "Barkan",
@@ -17,6 +17,7 @@
     "dist:mac": "npm run dist -- -m",
     "dist:linux": "npm run dist -- -l",
     "lint": "eslint .",
+    "test:updates": "node --test test/mac-updater.cjs test/update-ui.cjs",
     "check": "electron tools/check-electron.cjs",
     "distro:build": "node tools/build-distribution.cjs",
     "distro:verify": "node tools/verify-distribution.cjs",
@@ -40,6 +41,7 @@
     "helios-core": "~2.3.0",
     "helios-distribution-types": "^1.3.0",
     "jquery": "^3.7.1",
+    "js-yaml": "^4.3.2",
     "lodash.merge": "^4.6.2",
     "semver": "^7.7.3",
     "toml": "^3.0.0"

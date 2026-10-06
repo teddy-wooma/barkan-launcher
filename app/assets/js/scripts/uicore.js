@@ -10,13 +10,6 @@ const Lang                           = require('./assets/js/langloader')
 const loggerUICore             = LoggerUtil.getLogger('UICore')
 const loggerAutoUpdater        = LoggerUtil.getLogger('AutoUpdater')
 
-// Base URL of the launcher's own release downloads, used on macOS to offer a
-// direct .dmg link when an update is available. Only relevant once the
-// auto-updater is enabled - see README.md ("자동 업데이트"). Example:
-// 'https://github.com/your-user/barkan-launcher/releases/download'
-const LAUNCHER_RELEASE_DOWNLOAD_BASE = null
-
-
 process.traceProcessWarnings = true
 process.traceDeprecation = true
 
@@ -92,7 +85,24 @@ document.addEventListener('error', event => {
 }, true)
 
 
+let availableUpdateInfo = null
+let updateDownloaded = false
+let macSelfUpdateProgress = null
 let updateCheckListener
+
+function requestUpdateCheck(){
+    settingsUpdateStatusMessage('')
+    settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkingForUpdateButton'), true)
+    ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
+}
+
+function requestUpdateInstall(){
+    if(process.platform === 'darwin'){
+        handleMacSelfUpdateProgress({ stage: 'checking' })
+    }
+    ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
+}
+
 if(!isDev){
     ipcRenderer.on('autoUpdateNotification', (event, arg, info) => {
         switch(arg){
@@ -103,8 +113,10 @@ if(!isDev){
             case 'update-available':
                 loggerAutoUpdater.info('New update available', info.version)
 
-                if(process.platform === 'darwin' && LAUNCHER_RELEASE_DOWNLOAD_BASE != null){
-                    info.darwindownload = `${LAUNCHER_RELEASE_DOWNLOAD_BASE}/v${info.version}/Barkan-Launcher-setup-${info.version}${process.arch === 'arm64' ? '-arm64' : '-x64'}.dmg`
+                availableUpdateInfo = info
+                updateDownloaded = false
+                settingsUpdateStatusMessage('')
+                if(process.platform === 'darwin'){
                     showUpdateUI(info)
                 }
 
@@ -112,18 +124,22 @@ if(!isDev){
                 break
             case 'update-downloaded':
                 loggerAutoUpdater.info('Update ' + info.version + ' ready to be installed.')
-                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, () => {
-                    if(!isDev){
-                        ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
-                    }
-                })
+                availableUpdateInfo = info
+                updateDownloaded = true
+                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, requestUpdateInstall)
                 showUpdateUI(info)
                 break
             case 'update-not-available':
                 loggerAutoUpdater.info('No new update found.')
-                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'))
+                availableUpdateInfo = null
+                updateDownloaded = false
+                macSelfUpdateProgress = null
+                populateSettingsUpdateInformation(null)
+                settingsUpdateStatusMessage('')
+                document.getElementById('image_seal_container').removeAttribute('update')
                 break
             case 'ready':
+                clearInterval(updateCheckListener)
                 updateCheckListener = setInterval(() => {
                     ipcRenderer.send('autoUpdateAction', process.platform === 'darwin' ? 'checkMacUpdate' : 'checkForUpdate')
                 }, 1800000)
@@ -134,9 +150,9 @@ if(!isDev){
                 break
             case 'realerror':
                 // 확인이 실패해도 버튼이 "확인 중"에 멈추지 않게 되돌립니다.
-                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false, () => {
-                    ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
-                })
+                settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false, requestUpdateCheck)
+                settingsUpdateStatusMessage(info && info.message ? info.message : Lang.queryJS('settings.updates.checkFailed'))
+                loggerAutoUpdater.error('Update check failed', info)
                 if(info != null && info.code != null){
                     if(info.code === 'ERR_UPDATER_INVALID_RELEASE_FEED'){
                         loggerAutoUpdater.info('No suitable releases found.')
@@ -160,49 +176,52 @@ function changeAllowPrerelease(val){
     ipcRenderer.send('autoUpdateAction', 'allowPrereleaseChange', val)
 }
 
-// macOS 자체 교체 업데이트의 진행 상황입니다.
-// 서명 인증서가 없어 electron-updater 로는 설치할 수 없어서
-// dmg 를 직접 받아 앱을 교체합니다. (index.js 의 runMacSelfUpdate)
+// Keep both entry points disabled while a single update is running.
 function handleMacSelfUpdateProgress(info){
+    macSelfUpdateProgress = info
     const stage = info != null ? info.stage : null
-
+    let text
     switch(stage){
         case 'checking':
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkingForUpdateButton'), true)
+            text = Lang.queryJS('uicore.autoUpdate.checkingForUpdateButton')
             break
-
         case 'downloading': {
-            const percent = info.total > 0 ? Math.floor((info.received / info.total) * 100) : 0
-            settingsUpdateButtonStatus(`${Lang.queryJS('settings.updates.downloadingButton')} ${percent}%`, true)
+            const percent = info.total > 0 ? Math.min(100, Math.floor(info.received / info.total * 100)) : 0
+            text = `${Lang.queryJS('settings.updates.downloadingButton')} ${percent}%`
             break
         }
-
         case 'extracting':
-            settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadingButton'), true)
+            text = Lang.queryJS('settings.updates.extractingButton')
             break
-
         case 'installing':
-            // 곧 런처가 종료되고 새 버전이 설치됩니다.
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), true)
+            text = Lang.queryJS('settings.updates.installingButton')
             break
-
-        case 'up-to-date':
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
-            break
-
         case 'manual':
-            // dmg 를 열어 두었습니다. 사용자가 Applications 로 옮겨야 합니다.
-            loggerAutoUpdater.info('자동 교체를 할 수 없어 dmg 를 열었습니다.', info != null ? info.reason : '')
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
-            break
-
-        case 'failed':
-            loggerAutoUpdater.error('macOS 자체 교체 업데이트 실패', info != null ? info.message : '')
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'), false)
-            break
-
+        case 'failed': {
+            macSelfUpdateProgress = null
+            const message = stage === 'manual'
+                ? Lang.queryJS('settings.updates.manualInstallMessage')
+                : `${Lang.queryJS('settings.updates.installFailed')} ${info.message || ''}`
+            loggerAutoUpdater.error(message)
+            settingsUpdateStatusMessage(message)
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, requestUpdateInstall)
+            showLandingUpdateNotice(availableUpdateInfo, true)
+            setOverlayContent(Lang.queryJS('settings.updates.updateMessageTitle'), '', Lang.queryJS('settings.msftLogin.okButton'))
+            document.getElementById('overlayDesc').textContent = message
+            setOverlayHandler(null)
+            toggleOverlay(true)
+            return
+        }
         default:
-            break
+            return
+    }
+    settingsUpdateStatusMessage('')
+    settingsUpdateButtonStatus(text, true)
+    const button = document.getElementById('updateNoticeButton')
+    if(button != null){
+        button.textContent = text
+        button.disabled = true
+        button.onclick = null
     }
 }
 

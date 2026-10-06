@@ -1373,9 +1373,11 @@ const settingsUpdateActionButton   = document.getElementById('settingsUpdateActi
 function settingsUpdateButtonStatus(text, disabled = false, handler = null){
     settingsUpdateActionButton.innerHTML = text
     settingsUpdateActionButton.disabled = disabled
-    if(handler != null){
-        settingsUpdateActionButton.onclick = handler
-    }
+    settingsUpdateActionButton.onclick = handler
+}
+
+function settingsUpdateStatusMessage(message){
+    document.getElementById('settingsUpdateStatusMessage').textContent = message
 }
 
 
@@ -1443,12 +1445,8 @@ function populateSettingsUpdateInformation(data){
         settingsUpdateChangelogText.innerHTML = renderReleaseNotes(data.releaseNotes)
         populateVersionInformation(data.version, settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
 
-        if(process.platform === 'darwin'){
-            // 서명 인증서가 없어 electron-updater 로는 설치할 수 없습니다.
-            // 자체 교체 업데이트를 시작합니다. (index.js 의 runMacSelfUpdate)
-            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, () => {
-                require('electron').ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
-            })
+        if(process.platform === 'darwin' || updateDownloaded){
+            settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, requestUpdateInstall)
         } else {
             settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadingButton'), true)
         }
@@ -1456,18 +1454,16 @@ function populateSettingsUpdateInformation(data){
         settingsUpdateTitle.innerHTML = Lang.queryJS('settings.updates.latestVersionTitle')
         settingsUpdateChangelogCont.style.display = 'none'
         populateVersionInformation(remote.app.getVersion(), settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
-        settingsUpdateButtonStatus(Lang.queryJS('settings.updates.checkForUpdatesButton'), false, () => {
-            if(!isDev){
-                ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
-                settingsUpdateButtonStatus(Lang.queryJS('settings.updates.checkingForUpdatesButton'), true)
-            }
-        })
+        settingsUpdateButtonStatus(Lang.queryJS('settings.updates.checkForUpdatesButton'), false, requestUpdateCheck)
     }
 }
 
 
-function prepareUpdateTab(data = null){
+function prepareUpdateTab(data = availableUpdateInfo){
     populateSettingsUpdateInformation(data)
+    if(macSelfUpdateProgress != null){
+        handleMacSelfUpdateProgress(macSelfUpdateProgress)
+    }
 }
 
 

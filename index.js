@@ -15,6 +15,8 @@ const { AZURE_CLIENT_ID, MSFT_OPCODE, MSFT_REPLY_TYPE, MSFT_ERROR, SHELL_OPCODE 
 const crypto                            = require('crypto')
 const LangLoader                        = require('./app/assets/js/langloader')
 const NbtUtil                           = require('./app/assets/js/nbtutil')
+const { createMacUpdater }              = require('./app/assets/js/macupdater')
+const macUpdater                        = createMacUpdater({ app, shell })
 
 LangLoader.setupLanguage()
 
@@ -30,7 +32,8 @@ function initAutoUpdater(event, data) {
         autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
     }
     if(process.platform === 'darwin'){
-        autoUpdater.autoDownload = false
+        // The custom DMG updater owns both checking and installation on macOS.
+        return
     }
     autoUpdater.on('update-available', (info) => {
         event.sender.send('autoUpdateNotification', 'update-available', info)
@@ -50,11 +53,6 @@ function initAutoUpdater(event, data) {
 }
 
 ipcMain.on('autoUpdateAction', (event, arg, data) => {
-    // macOS 업데이트 문제를 추적하기 위해 클릭이 도달했는지 먼저 기록합니다.
-    // (로그가 비어 있으면 UI 배선 문제, 찍히면 설치 로직 문제입니다)
-    if(process.platform === 'darwin' && (arg === 'installUpdateNow' || arg === 'checkMacUpdate' || arg === 'checkForUpdate')){
-        macUpdateLog('IPC 수신: ' + arg)
-    }
     switch(arg){
         case 'initAutoUpdater':
             console.log('Initializing auto updater.')
@@ -62,12 +60,12 @@ ipcMain.on('autoUpdateAction', (event, arg, data) => {
             event.sender.send('autoUpdateNotification', 'ready')
             break
         case 'checkMacUpdate':
-            checkMacUpdate(event)
+            macUpdater.check(event.sender)
             break
         case 'checkForUpdate':
             if(process.platform === 'darwin'){
                 // macOS 에서는 서명 문제로 electron-updater 확인이 실패할 수 있습니다.
-                checkMacUpdate(event)
+                macUpdater.check(event.sender)
                 break
             }
             autoUpdater.checkForUpdates()
@@ -90,7 +88,7 @@ ipcMain.on('autoUpdateAction', (event, arg, data) => {
         case 'installUpdateNow':
             if(process.platform === 'darwin'){
                 // 서명이 없어 electron-updater 로는 설치할 수 없습니다.
-                runMacSelfUpdate(event)
+                macUpdater.install(event.sender)
             } else {
                 autoUpdater.quitAndInstall()
             }
@@ -1176,312 +1174,3 @@ app.on('activate', () => {
         createWindow()
     }
 })
-
-// ===== macOS 자체 교체 업데이트 =====
-// 서명 인증서가 없어 electron-updater 의 설치는 쓸 수 없습니다.
-// 확인은 기존대로 하고, 설치는 dmg 를 직접 받아 앱 번들을 통째로 교체합니다.
-
-const MAC_RELEASE_BASE = 'https://github.com/teddy-wooma/barkan-launcher/releases/latest/download'
-
-function macArchTag() {
-    return process.arch === 'arm64' ? 'arm64' : 'x64'
-}
-
-function macDmgFileName(version) {
-    return `Barkan Launcher-setup-${version}-${macArchTag()}.dmg`
-}
-
-// .../Barkan Launcher.app/Contents/MacOS/Barkan Launcher 에서 3단계 위가 앱 번들입니다.
-function macAppBundle() {
-    return path.resolve(path.dirname(app.getPath('exe')), '..', '..')
-}
-
-// dmg 안이나 다운로드 폴더에서 바로 실행하면 경로가 무작위화되어 교체할 수 없습니다.
-function isTranslocated() {
-    return macAppBundle().includes('AppTranslocation')
-}
-
-async function fetchLatestMacRelease() {
-    const response = await fetch(`${MAC_RELEASE_BASE}/latest-mac.yml`, {
-        redirect: 'follow',
-        headers: { 'user-agent': `BarkanLauncher/${app.getVersion()}` },
-        signal: AbortSignal.timeout(20000)
-    })
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-    }
-    const text = await response.text()
-    const version = /^version:\s*(\S+)/m.exec(text)
-    if (version == null) {
-        throw new Error('latest-mac.yml 에서 버전을 읽지 못했습니다.')
-    }
-    return { version: version[1], text }
-}
-
-// latest-mac.yml 의 files 항목에서 이 아키텍처의 dmg 와 sha512 를 찾습니다.
-function findMacDmgEntry(text, fileName) {
-    const lines = text.split(/\r?\n/)
-    for (let i = 0; i < lines.length; i++) {
-        if (!lines[i].includes(fileName)) {
-            continue
-        }
-        for (let j = i; j < Math.min(i + 6, lines.length); j++) {
-            const sha = /^\s*sha512:\s*(\S+)/.exec(lines[j])
-            if (sha != null) {
-                return {
-                    url: `${MAC_RELEASE_BASE}/${encodeURIComponent(fileName)}`,
-                    sha512: sha[1]
-                }
-            }
-        }
-    }
-    return null
-}
-
-async function downloadMacDmg(entry, destination, onProgress) {
-    const response = await fetch(entry.url, {
-        redirect: 'follow',
-        headers: { 'user-agent': `BarkanLauncher/${app.getVersion()}` },
-        signal: AbortSignal.timeout(60 * 60 * 1000)
-    })
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-    }
-
-    const total = Number(response.headers.get('content-length') || 0)
-    let received = 0
-    let lastReport = 0
-    const hash = crypto.createHash('sha512')
-    const counter = new Transform({
-        transform(chunk, encoding, callback) {
-            received += chunk.length
-            hash.update(chunk)
-            if (onProgress && (received - lastReport > 1024 * 1024 || received === total)) {
-                lastReport = received
-                onProgress(received, total)
-            }
-            callback(null, chunk)
-        }
-    })
-
-    const { pipeline } = require('stream/promises')
-    await pipeline(Readable.fromWeb(response.body), counter, fs.createWriteStream(destination))
-
-    const actual = hash.digest('base64')
-    if (actual !== entry.sha512) {
-        await fs.promises.rm(destination, { force: true }).catch(() => {})
-        throw new Error('내려받은 파일이 손상되었습니다. (sha512 불일치)')
-    }
-}
-
-function runCommand(command, args) {
-    return new Promise((resolve, reject) => {
-        const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-        let out = ''
-        child.stdout.on('data', d => { out += d })
-        child.stderr.on('data', d => { out += d })
-        child.on('error', reject)
-        child.on('close', code => {
-            if (code === 0) {
-                resolve(out)
-            } else {
-                reject(new Error(`${command} 실패 (코드 ${code})`))
-            }
-        })
-    })
-}
-
-async function extractAppFromDmg(dmgPath, destination) {
-    const mountPoint = path.join(os.tmpdir(), `barkan-dmg-${Date.now()}`)
-    await fs.promises.mkdir(mountPoint, { recursive: true })
-    try {
-        await runCommand('hdiutil', ['attach', '-nobrowse', '-readonly', '-noverify', '-mountpoint', mountPoint, dmgPath])
-        await fs.promises.rm(destination, { recursive: true, force: true })
-        // ditto 를 써야 코드 서명이 그대로 보존됩니다.
-        await runCommand('ditto', [path.join(mountPoint, 'Barkan Launcher.app'), destination])
-    } finally {
-        await runCommand('hdiutil', ['detach', mountPoint, '-force']).catch(() => {})
-        await fs.promises.rm(mountPoint, { recursive: true, force: true }).catch(() => {})
-    }
-}
-
-// 런처가 종료된 뒤에 앱을 갈아끼우는 스크립트를 만듭니다.
-// 스크립트는 반드시 /tmp 에 둡니다. 앱 안에 두면 앱을 지울 때 자기 자신도 사라집니다.
-async function writeSelfReplaceScripts(target, staged, dmgPath) {
-    const rootPath = path.join(os.tmpdir(), 'barkan-selfupdate-root.sh')
-    const mainPath = path.join(os.tmpdir(), 'barkan-selfupdate.sh')
-
-    const rootScript = [
-        '#!/bin/bash',
-        '# 관리자 권한으로 실행되는 부분입니다. (앱 교체와 격리 속성 제거)',
-        'set -e',
-        'APP="$1"',
-        'STAGED="$2"',
-        'rm -rf "$APP"',
-        'mv "$STAGED" "$APP"',
-        'xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true',
-        ''
-    ].join('\n')
-
-    const mainScript = [
-        '#!/bin/bash',
-        '# 런처가 끝난 뒤 앱을 교체하고 다시 실행합니다.',
-        'APP="$1"',
-        'STAGED="$2"',
-        'PID="$3"',
-        'DMG="$4"',
-        'ROOT="$5"',
-        'BACKUP="$6"',
-        'LOG=/tmp/barkan-selfupdate.log',
-        'exec >>"$LOG" 2>&1',
-        'echo "=== $(date) 자체 업데이트 시작 ==="',
-        '',
-        '# 런처가 끝날 때까지 기다립니다. (최대 30초)',
-        'for i in $(seq 1 60); do',
-        '  kill -0 "$PID" 2>/dev/null || break',
-        '  sleep 0.5',
-        'done',
-        'sleep 1',
-        '',
-        'DIR=$(dirname "$APP")',
-        'rm -rf "$BACKUP"',
-        '',
-        'if [ -w "$DIR" ]; then',
-        '  # 쓰기 권한이 있으면 그대로 진행합니다.',
-        '  cp -R "$APP" "$BACKUP" 2>/dev/null || true',
-        '  if bash "$ROOT" "$APP" "$STAGED"; then OK=1; else OK=0; fi',
-        'else',
-        '  # /Applications 처럼 권한이 필요한 곳은 암호를 한 번 묻습니다.',
-        '  cp -R "$APP" "$BACKUP" 2>/dev/null || true',
-        '  if osascript -e "do shell script \\"bash \'$ROOT\' \'$APP\' \'$STAGED\'\\" with administrator privileges"; then OK=1; else OK=0; fi',
-        'fi',
-        '',
-        'if [ "$OK" = "1" ]; then',
-        '  echo "교체 완료"',
-        '  rm -rf "$BACKUP"',
-        '  open "$APP"',
-        'else',
-        '  echo "교체 실패 - 백업으로 되돌리고 dmg 를 엽니다"',
-        '  if [ -d "$BACKUP" ]; then',
-        '    if [ -w "$DIR" ]; then rm -rf "$APP" && mv "$BACKUP" "$APP";',
-        '    else osascript -e "do shell script \\"rm -rf \'$APP\' && mv \'$BACKUP\' \'$APP\'\\" with administrator privileges"; fi',
-        '  fi',
-        '  open "$DMG"',
-        'fi',
-        ''
-    ].join('\n')
-
-    await fs.promises.writeFile(rootPath, rootScript, 'utf8')
-    await fs.promises.writeFile(mainPath, mainScript, 'utf8')
-    await fs.promises.chmod(mainPath, 0o755).catch(() => {})
-    return { mainPath, rootPath }
-}
-
-async function runMacSelfUpdate(event) {
-    const send = (arg, data) => {
-        event.sender.send('autoUpdateNotification', arg, data)
-    }
-
-    let dmgPath = null
-    macUpdateLog('설치 시작 요청 (현재 ' + app.getVersion() + ', arch ' + process.arch + ')')
-    try {
-        send('mac-selfupdate-progress', { stage: 'checking' })
-        const latest = await fetchLatestMacRelease()
-
-        if (semver.lte(latest.version, app.getVersion())) {
-            send('mac-selfupdate-progress', { stage: 'up-to-date', version: latest.version })
-            return
-        }
-
-        const fileName = macDmgFileName(latest.version)
-        const entry = findMacDmgEntry(latest.text, fileName)
-        if (entry == null) {
-            throw new Error(`릴리즈에서 ${fileName} 을 찾지 못했습니다.`)
-        }
-
-        dmgPath = path.join(os.tmpdir(), fileName)
-        macUpdateLog('내려받기: ' + fileName + ' → ' + dmgPath)
-        await downloadMacDmg(entry, dmgPath, (received, total) => {
-            send('mac-selfupdate-progress', { stage: 'downloading', received, total })
-        })
-
-        // dmg 안이나 다운로드 폴더에서 실행 중이면 교체할 수 없습니다.
-        if (isTranslocated()) {
-            await shell.openPath(dmgPath)
-            send('mac-selfupdate-progress', { stage: 'manual', reason: 'translocated' })
-            return
-        }
-
-        const staged = path.join(os.tmpdir(), 'Barkan Launcher.app.new')
-        send('mac-selfupdate-progress', { stage: 'extracting' })
-        macUpdateLog('dmg 해제 중')
-        await extractAppFromDmg(dmgPath, staged)
-        macUpdateLog('앱 추출 완료: ' + staged)
-
-        send('mac-selfupdate-progress', { stage: 'installing' })
-        const appBundle = macAppBundle()
-        const { mainPath } = await writeSelfReplaceScripts(appBundle, staged, dmgPath)
-
-        // 런처가 종료되어야 앱을 바꿀 수 있으므로 분리 실행 후 스스로 끝냅니다.
-        spawn('/bin/bash', [mainPath, appBundle, staged, String(process.pid), dmgPath,
-            path.join(os.tmpdir(), 'barkan-selfupdate-root.sh'),
-            `${appBundle}.bak`], { detached: true, stdio: 'ignore' }).unref()
-
-        macUpdateLog('교체 스크립트 실행: ' + mainPath)
-        setTimeout(() => app.quit(), 900)
-    } catch (err) {
-        macUpdateLog('실패: ' + err.message)
-        console.error('[MacSelfUpdate]', err)
-        send('mac-selfupdate-progress', { stage: 'failed', message: err.message })
-        // 실패하면 dmg 를 열어 사용자가 직접 설치할 수 있게 합니다.
-        if (dmgPath != null) {
-            await shell.openPath(dmgPath).catch(() => {})
-        }
-    }
-}
-// macOS 는 electron-updater 의 확인이 실패할 수 있어 latest-mac.yml 을 직접 봅니다.
-// 이 확인이 성공해야 "지금 설치" 버튼이 뜨고 자체 교체를 시작할 수 있습니다.
-function extractMacReleaseNotes(text) {
-    const m = /^releaseNotes:\s*"([\s\S]*?)"\s*$/m.exec(text)
-    if (m == null) {
-        return ''
-    }
-    return m[1].replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\"/g, '"')
-}
-
-async function checkMacUpdate(event) {
-    macUpdateLog('--- 확인 시작 (현재 ' + app.getVersion() + ') ---')
-    try {
-        event.sender.send('autoUpdateNotification', 'checking-for-update')
-        const latest = await fetchLatestMacRelease()
-        macUpdateLog('latest-mac.yml 버전: ' + latest.version)
-
-        if (semver.gt(latest.version, app.getVersion())) {
-            macUpdateLog('새 버전 발견: ' + latest.version)
-            event.sender.send('autoUpdateNotification', 'update-available', {
-                version: latest.version,
-                releaseName: latest.version,
-                releaseNotes: extractMacReleaseNotes(latest.text)
-            })
-        } else {
-            macUpdateLog('최신 버전입니다')
-            event.sender.send('autoUpdateNotification', 'update-not-available', { version: latest.version })
-        }
-    } catch (err) {
-        macUpdateLog('확인 실패: ' + err.message)
-        console.error('[MacUpdateCheck]', err)
-        event.sender.send('autoUpdateNotification', 'realerror', err)
-    }
-}
-// macOS 업데이트는 패키지 앱에서 콘솔이 보이지 않아 파일로 기록합니다.
-//   macOS: ~/Library/Application Support/Barkan Launcher/logs/mac-update.log
-function macUpdateLog(message) {
-    try {
-        const dir = path.join(app.getPath('userData'), 'logs')
-        fs.mkdirSync(dir, { recursive: true })
-        fs.appendFileSync(path.join(dir, 'mac-update.log'),
-            `[${new Date().toISOString()}] ${message}\n`, 'utf8')
-    } catch (err) {
-        // 로그를 못 써도 동작에는 영향이 없게 합니다.
-    }
-}

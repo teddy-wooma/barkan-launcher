@@ -32,6 +32,7 @@ files:
   # Development-only directories. `.npm-cache` and `.eb-cache` in particular are
   # large and must never end up inside the installer.
   - '!tools'
+  - '!test'
   - '!.npm-cache'
   - '!.eb-cache'
   - '!.verify'

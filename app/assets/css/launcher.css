@@ -2175,6 +2175,17 @@ input:checked + .toggleSwitchSlider:before {
     pointer-events: none;
 }
 
+#settingsUpdateStatusMessage {
+    padding: 8px 10px 0;
+    font-size: 12px;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+}
+
+#settingsUpdateStatusMessage:empty {
+    display: none;
+}
+
 
 #landingContainer {
     height: 100%;

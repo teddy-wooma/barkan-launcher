@@ -1686,9 +1686,7 @@ function showLandingUpdateNotice(info, downloaded){
             ? Lang.queryJS('uicore.autoUpdate.installNowButton')
             : Lang.queryJS('settings.updates.downloadingButton')
         button.disabled = !downloaded
-        button.onclick = downloaded ? () => {
-            require('electron').ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
-        } : null
+        button.onclick = downloaded ? requestUpdateInstall : null
     }
 
     notice.style.display = ''
@@ -1707,7 +1705,7 @@ ipcRenderer.on('autoUpdateNotification', (event, arg, info) => {
         showLandingUpdateNotice(info, process.platform === 'darwin')
     } else if(arg === 'update-downloaded'){
         showLandingUpdateNotice(info, true)
-    } else if(arg === 'update-not-available' || arg === 'realerror'){
+    } else if(arg === 'update-not-available'){
         hideLandingUpdateNotice()
     }
 })
