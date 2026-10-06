@@ -246,18 +246,29 @@ function setByte(compoundTag, name, value) {
 }
 
 
-function hostOf(ip) {
-    const text = String(ip || '').trim()
-    const index = text.lastIndexOf(':')
-    return index > 0 ? text.slice(0, index) : text
+function endpointOf(ip) {
+    try {
+        const url = new URL(`minecraft://${String(ip || '').trim()}`)
+        if (!url.hostname || url.pathname || url.search || url.hash || url.username || url.password) {
+            return null
+        }
+        return `${url.hostname.toLowerCase()}:${url.port || '25565'}`
+    } catch (_) {
+        return null
+    }
 }
 
 
 exports.ensureServer = function (buffer, options) {
     const name = String((options && options.name) || '')
     const ip = String((options && options.ip) || '')
-    if (ip.length === 0) {
+    const quickPlayIp = String((options && options.quickPlayAddress) || '')
+    const endpoint = endpointOf(ip)
+    if (endpoint == null) {
         throw new Error('서버 주소가 비어 있습니다.')
+    }
+    if (quickPlayIp && endpointOf(quickPlayIp) !== endpoint) {
+        throw new Error('자동 접속 주소가 서버 주소와 다릅니다.')
     }
 
     let root
@@ -274,27 +285,44 @@ exports.ensureServer = function (buffer, options) {
     }
 
     const list = listEntry[1]
-    const wantedHost = hostOf(ip)
-    let server = list.items.find(item => {
+    const matches = item => {
         if (item.type !== TAG.COMPOUND) {
             return false
         }
         const ipTag = findChild(item, 'ip')
-        return ipTag != null && hostOf(ipTag[1].value.toString('utf8')) === wantedHost
-    })
+        return ipTag != null && ipTag[1].type === TAG.STRING && endpointOf(ipTag[1].value.toString('utf8')) === endpoint
+    }
+    let server = list.items.find(item => matches(item) && findChild(item, 'hidden')?.[1].value !== 1)
 
     if (server == null) {
-
         server = makeCompound([])
         setString(server, 'ip', ip)
         if (name.length > 0) {
             setString(server, 'name', name)
         }
+        setByte(server, 'hidden', 0)
         list.items.push(server)
     }
 
-
-    setByte(server, 'acceptTextures', 1)
+    // Quick Play searches servers.dat by the exact "host:port" string, including hidden entries.
+    // Updating only the visible "host" entry leaves its separate Quick Play entry at PROMPT.
+    const quickPlay = quickPlayIp || endpoint
+    if (!list.items.some(item => {
+        if (item.type !== TAG.COMPOUND) return false
+        const ipTag = findChild(item, 'ip')
+        return ipTag != null && ipTag[1].type === TAG.STRING && ipTag[1].value.toString('utf8') === quickPlay
+    })) {
+        const hidden = makeCompound([])
+        setString(hidden, 'ip', quickPlay)
+        setString(hidden, 'name', name || 'Minecraft 서버')
+        setByte(hidden, 'hidden', 1)
+        list.items.push(hidden)
+    }
+    for (const item of list.items) {
+        if (matches(item)) {
+            setByte(item, 'acceptTextures', 1)
+        }
+    }
 
     return write(root)
 }
@@ -310,10 +338,12 @@ exports.listServers = function (buffer) {
         const nameTag = findChild(item, 'name')
         const ipTag = findChild(item, 'ip')
         const acceptTag = findChild(item, 'acceptTextures')
+        const hiddenTag = findChild(item, 'hidden')
         return {
             name: nameTag != null ? nameTag[1].value.toString('utf8') : '',
             ip: ipTag != null ? ipTag[1].value.toString('utf8') : '',
-            acceptTextures: acceptTag != null ? acceptTag[1].value : null
+            acceptTextures: acceptTag != null ? acceptTag[1].value : null,
+            hidden: hiddenTag != null ? hiddenTag[1].value === 1 : false
         }
     })
 }

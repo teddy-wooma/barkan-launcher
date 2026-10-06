@@ -628,7 +628,7 @@ async function dlAsync(login = true) {
 
 
             try {
-                await syncRemoteMods(pb, distro)
+                await syncRemoteMods(pb)
             } catch (modErr) {
                 loggerLaunchSuite.error('Mods could not be prepared.', modErr)
                 showLaunchFailure('모드 준비 실패', modErr.message || '모드를 준비하지 못했습니다.')
@@ -1325,7 +1325,7 @@ function writeIrisProperties(gameDir, packFileName){
 }
 
 
-async function syncRemoteMods(pb, distro){
+async function syncRemoteMods(pb){
     const { ipcRenderer } = require('electron')
     setLaunchDetails('모드 준비 중..')
 
@@ -1333,7 +1333,8 @@ async function syncRemoteMods(pb, distro){
         directory: pb.gameDir,
         disabledUrls: ConfigManager.getDisabledMods(),
 
-        serverAddress: (distro.rawDistribution.servers[0] || {}).address || null
+        serverAddress: pb.server.rawServer.address || null,
+        quickPlayAddress: `${pb.server.hostname}:${pb.server.port}`
     })
 
     if(result == null || result.ok !== true){

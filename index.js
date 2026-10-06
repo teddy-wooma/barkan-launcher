@@ -564,7 +564,7 @@ async function resolveModrinthVersion(slug) {
     return null
 }
 
-async function ensureServerEntry(directory, address) {
+async function ensureServerEntry(directory, address, quickPlayAddress) {
     if(typeof directory !== 'string' || directory.length === 0){
         return false
     }
@@ -580,7 +580,11 @@ async function ensureServerEntry(directory, address) {
         current = null
     }
 
-    const updated = NbtUtil.ensureServer(current, { name: '바르칸 열도', ip: address })
+    const updated = NbtUtil.ensureServer(current, {
+        name: '바르칸 열도',
+        ip: address,
+        quickPlayAddress
+    })
     await fs.promises.mkdir(directory, { recursive: true })
     await fs.promises.writeFile(target, updated)
     return true
@@ -669,7 +673,7 @@ async function writeModState(statePath, data) {
 }
 
 ipcMain.handle('syncMods', async (event, options) => {
-    const { directory, disabledUrls, serverAddress } = options || {}
+    const { directory, disabledUrls, serverAddress, quickPlayAddress } = options || {}
     if(typeof directory !== 'string' || directory.length === 0){
         return { ok: false, reason: '게임 폴더를 알 수 없습니다.', items: [] }
     }
@@ -788,7 +792,7 @@ ipcMain.handle('syncMods', async (event, options) => {
     }
 
     try {
-        await ensureServerEntry(directory, serverAddress)
+        await ensureServerEntry(directory, serverAddress, quickPlayAddress)
     } catch (err) {
         console.warn('[Mods] servers.dat 을 쓰지 못했습니다.', err.message)
     }
