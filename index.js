@@ -6,6 +6,7 @@ const autoUpdater                       = require('electron-updater').autoUpdate
 const ejse                              = require('ejs-electron')
 const fs                                = require('fs')
 const isDev                             = require('./app/assets/js/isdev')
+const os                                = require('os')
 const path                              = require('path')
 const semver                            = require('semver')
 const { spawn }                         = require('child_process')
@@ -1175,7 +1176,10 @@ function getPlatformIcon(filename){
     return path.join(__dirname, 'app', 'assets', 'images', `${filename}.${ext}`)
 }
 
-app.on('ready', launchLogSystemInfo)
+app.on('ready', () => {
+    // 어떤 이유로든 이 호출이 실패해도 창은 반드시 떠야 합니다.
+    try { launchLogSystemInfo() } catch (err) { console.error('[launchLog]', err) }
+})
 app.on('ready', createWindow)
 app.on('ready', createMenu)
 
@@ -1258,6 +1262,8 @@ function launchLogSection(title) {
 }
 
 function launchLogSystemInfo() {
+    // 로깅이 앱 시작을 막으면 안 됩니다.
+    try {
     const cpus = os.cpus() || []
     launchLogSection('런처 시작')
     launchLog('SYS', '런처 버전   : ' + app.getVersion())
@@ -1270,6 +1276,9 @@ function launchLogSystemInfo() {
     launchLog('SYS', 'appData     : ' + app.getPath('appData'))
     launchLog('SYS', '실행 파일   : ' + app.getPath('exe'))
     launchLog('SYS', '개발 모드   : ' + isDev)
+    } catch (err) {
+        console.error('[launchLog] 시스템 정보 기록 실패:', err)
+    }
 }
 
 // 렌더러(화면 쪽)에서 보내는 로그를 받아 같은 파일에 씁니다.
