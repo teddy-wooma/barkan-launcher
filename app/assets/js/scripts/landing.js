@@ -63,12 +63,34 @@ function toggleLaunchArea(loading){
 }
 
 
+// ===== 진단 로그 (플레이 버튼부터의 전 과정) =====
+// main 프로세스로 보내 <userData>/logs/launcher.log 에 기록합니다.
+function logLaunch(scope, message){
+    try {
+        require('electron').ipcRenderer.send('launcherLog', scope, message)
+    } catch(err) {
+        // 로그를 못 남겨도 실행을 막지 않습니다.
+    }
+}
+
+
+function logLaunchSection(title){
+    logLaunch('----', '')
+    logLaunch('----', '========== ' + title + ' ==========')
+}
+
+
 function setLaunchDetails(details){
+    logLaunch('STEP', details)
     launch_details_text.innerHTML = details
 }
 
 
 function setLaunchPercentage(percent){
+    const rounded = Math.round(percent)
+    if(rounded === 0 || rounded === 100 || rounded % 25 === 0){
+        logLaunch('PROGRESS', rounded + '%')
+    }
     launch_progress.setAttribute('max', 100)
     launch_progress.setAttribute('value', percent)
     launch_progress_label.innerHTML = percent + '%'
@@ -88,6 +110,12 @@ function setLaunchEnabled(val){
 
 document.getElementById('launch_button').addEventListener('click', async e => {
     loggerLanding.info('Launching game..')
+
+    logLaunchSection('플레이 버튼 클릭')
+    logLaunch('PLAY', '선택된 서버 : ' + ConfigManager.getSelectedServer())
+    logLaunch('PLAY', '저장된 Java 경로 : ' + ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer()))
+    logLaunch('PLAY', '게임 폴더 : ' + ConfigManager.getInstanceDirectory())
+    logLaunch('PLAY', '데이터 폴더 : ' + ConfigManager.getDataDirectory())
     try {
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
         const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())
@@ -278,6 +306,9 @@ let serverStatusListener = setInterval(() => refreshServerStatus(true), 300000)
 
 
 function showLaunchFailure(title, desc){
+    logLaunchSection('실행 실패 — 화면에 표시된 내용')
+    logLaunch('FAIL', '제목 : ' + title)
+    logLaunch('FAIL', '내용 : ' + desc)
     setOverlayContent(
         title,
         desc,
@@ -432,6 +463,7 @@ const GAME_LAUNCH_REGEX = /^\[.+\]: (?:MinecraftForge .+ Initialized|ModLauncher
 const MIN_LINGER = 5000
 
 async function dlAsync(login = true) {
+    logLaunchSection('게임 실행 준비 시작')
 
 
     const loggerLaunchSuite = LoggerUtil.getLogger('LaunchSuite')
@@ -636,7 +668,21 @@ async function dlAsync(login = true) {
             }
 
 
+            logLaunch('LAUNCH', 'ProcessBuilder.build() 호출 — 게임 프로세스를 띄웁니다')
             proc = pb.build()
+
+            // 여기서도 오류를 잡습니다. 핸들러가 없으면 조용히 실패해
+            // 화면에는 '완료' 로만 남고 게임 창이 뜨지 않습니다.
+            proc.on('error', (err) => {
+                logLaunchSection('게임 프로세스 시작 실패')
+                logLaunch('ERROR', (err && err.message) ? err.message : String(err))
+                logLaunch('ERROR', '코드 : ' + (err && err.code) + '   경로 : ' + (err && err.path))
+                showLaunchFailure(
+                    '게임을 실행하지 못했습니다',
+                    ((err && err.message) ? err.message : String(err))
+                        + '\n\n진단 로그를 확인해 주세요:\n' + ConfigManager.getLauncherDirectory() + '\\logs\\launcher.log'
+                )
+            })
 
 
             proc.stdout.on('data', tempListener)
@@ -659,6 +705,8 @@ async function dlAsync(login = true) {
         } catch(err) {
 
             loggerLaunchSuite.error('Error during launch', err)
+            logLaunchSection('게임 실행 중 예외')
+            logLaunch('ERROR', (err && err.stack) ? err.stack : String(err))
             showLaunchFailure(Lang.queryJS('landing.dlAsync.errorDuringLaunchTitle'), Lang.queryJS('landing.dlAsync.checkConsoleForDetails'))
 
         }

@@ -1650,3 +1650,28 @@ async function prepareSettings(first = false) {
     prepareAboutTab()
     prepareLanguageTab()
 }
+
+
+// 진단 로그 폴더를 여는 버튼을 정보 탭에 붙입니다.
+// (플레이 버튼부터의 전 과정이 <userData>/logs/launcher.log 에 기록됩니다)
+(function addOpenLogFolderButton(){
+    try {
+        const aboutTab = document.getElementById('settingsTabAbout')
+        if(aboutTab == null){
+            return
+        }
+        const wrap = document.createElement('div')
+        wrap.style.marginTop = '14px'
+        const btn = document.createElement('button')
+        btn.id = 'settingsOpenLogFolder'
+        btn.className = 'settingsAddAuthAccount'
+        btn.textContent = '진단 로그 폴더 열기'
+        btn.onclick = () => {
+            try { require('electron').ipcRenderer.send('launcherLogOpenFolder') } catch(err) { }
+        }
+        wrap.appendChild(btn)
+        aboutTab.appendChild(wrap)
+    } catch(err) {
+        // 버튼을 못 붙여도 런처 동작에는 영향이 없습니다.
+    }
+})()

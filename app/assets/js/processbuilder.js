@@ -223,26 +223,74 @@ class ProcessBuilder {
 
         logger.info('Launch Arguments:', loggableArgs)
 
-        const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
+        // ---- 진단 로그: 실행 직전 상태를 전부 남깁니다 ----
+        const javaExecPath = ConfigManager.getJavaExecutable(this.server.rawServer.id)
+        const javaExists = javaExecPath != null && javaExecPath.length > 0 && fs.existsSync(javaExecPath)
+        pbLogSection('게임 실행 준비')
+        pbLog('EXEC', 'Java 실행 파일 : ' + javaExecPath)
+        pbLog('EXEC', 'Java 존재 여부 : ' + (javaExists ? 'O 있음' : 'X 없음  ← 이게 실행 실패의 원인입니다'))
+        pbLog('EXEC', '게임 폴더      : ' + this.gameDir + '  (존재: ' + fs.existsSync(this.gameDir) + ')')
+        pbLog('EXEC', 'detached 실행  : ' + ConfigManager.getLaunchDetached())
+        pbLog('EXEC', '네이티브 임시  : ' + tempNativePath)
+        pbLog('EXEC', '인자 ' + loggableArgs.length + '개:')
+        // 토큰·UUID 는 로그에 남기지 않습니다. (로그를 공유/업로드해도 안전하도록)
+        pbSanitizeArgs(loggableArgs).forEach((a, i) => pbLog('ARGS', '  [' + i + '] ' + a))
+
+        const child = child_process.spawn(javaExecPath, args, {
             cwd: this.gameDir,
             detached: ConfigManager.getLaunchDetached()
         })
 
+        pbLog('EXEC', 'spawn 호출됨 — pid ' + child.pid)
+
         if(ConfigManager.getLaunchDetached()){
             child.unref()
+            pbLog('EXEC', 'detached 이므로 unref 했습니다.')
         }
+
+        // 이 핸들러가 없으면 Java 경로가 틀렸을 때 조용히 실패합니다.
+        // 처리되지 않은 'error' 는 렌더러에서 예외로 터지고 화면에는 아무 변화가 없습니다.
+        child.on('error', (err) => {
+            pbLogSection('게임 실행 실패')
+            pbLog('ERROR', '게임 프로세스를 시작하지 못했습니다: ' + (err && err.message ? err.message : String(err)))
+            pbLog('ERROR', '오류 코드 : ' + (err && err.code))
+            pbLog('ERROR', '경로      : ' + (err && err.path))
+            if (err && err.code === 'ENOENT') {
+                pbLog('ERROR', '→ Java 실행 파일을 찾을 수 없습니다. 런처 설정의 Java 경로를 확인하세요.')
+            } else if (err && err.code === 'EACCES') {
+                pbLog('ERROR', '→ 실행 권한이 없습니다. 백신이 차단했을 수 있습니다.')
+            } else if (err && err.code === 'UNKNOWN') {
+                pbLog('ERROR', '→ 알 수 없는 오류입니다. Java 경로에 한글/특수문자가 있는지 확인하세요.')
+            }
+            pbLog('ERROR', '스택: ' + (err && err.stack ? err.stack : '(없음)'))
+        })
 
         child.stdout.setEncoding('utf8')
         child.stderr.setEncoding('utf8')
 
         child.stdout.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[32m[Minecraft]\x1b[0m ${x}`))
+            data.trim().split('\n').forEach(x => {
+                console.log('\x1b[32m[Minecraft]\x1b[0m ' + x)
+                pbLog('GAME-OUT', x)
+            })
+        })
 
-        })
         child.stderr.on('data', (data) => {
-            data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
+            data.trim().split('\n').forEach(x => {
+                console.log('\x1b[31m[Minecraft]\x1b[0m ' + x)
+                pbLog('GAME-ERR', x)
+            })
         })
-        child.on('close', (code) => {
+
+        const pbLaunchStart = Date.now()
+        child.on('close', (code, signal) => {
+            const secs = ((Date.now() - pbLaunchStart) / 1000).toFixed(1)
+            pbLogSection('게임 종료')
+            pbLog('EXIT', '종료 코드 : ' + code + '   신호 : ' + signal + '   실행 시간 : ' + secs + '초')
+            if (code !== 0) {
+                pbLog('EXIT', '→ 비정상 종료입니다. 게임 로그 마지막 부분을 아래에 붙입니다.')
+            }
+            pbLogGameLogTail(this.gameDir)
             logger.info('Exited with code', code)
             fs.remove(tempNativePath, (err) => {
                 if(err){
@@ -900,3 +948,75 @@ class ProcessBuilder {
 }
 
 module.exports = ProcessBuilder
+
+
+// ===== 진단 로그 헬퍼 =====
+// 렌더러에서 main 프로세스로 보내 <userData>/logs/launcher.log 에 기록합니다.
+function pbLog(scope, message) {
+    try {
+        require('electron').ipcRenderer.send('launcherLog', scope, message)
+    } catch (err) {
+        // 로그를 못 남겨도 실행을 막지 않습니다.
+    }
+}
+
+
+function pbLogSection(title) {
+    pbLog('----', '')
+    pbLog('----', '========== ' + title + ' ==========')
+}
+
+
+// 게임이 남긴 logs/latest.log 마지막 부분을 런처 로그에 붙입니다.
+// 파일이 없으면 "게임이 로그를 만들기 전에 죽었다"는 뜻이라 그 자체가 단서입니다.
+function pbLogGameLogTail(gameDir, maxLines = 150) {
+    try {
+        const fsMod = require('fs')
+        const file = require('path').join(gameDir, 'logs', 'latest.log')
+        if (!fsMod.existsSync(file)) {
+            pbLog('GAMELOG', '게임 로그 파일이 없습니다: ' + file)
+            pbLog('GAMELOG', '→ 게임이 로그를 만들기 전에 종료되었습니다. (Java 실행 실패이거나 즉시 종료)')
+            return
+        }
+        const text = fsMod.readFileSync(file, 'utf8')
+        const lines = text.split('\n')
+        const tail = lines.slice(Math.max(0, lines.length - maxLines))
+        pbLog('GAMELOG', '게임 로그 마지막 ' + tail.length + '줄 — ' + file)
+        tail.forEach(l => pbLog('GAMELOG', l))
+    } catch (err) {
+        pbLog('GAMELOG', '게임 로그를 읽지 못했습니다: ' + (err.message || err))
+    }
+}
+
+// 로그에 남기면 안 되는 값을 가립니다.
+// 기존 마스킹은 토큰을 못 찾으면(findIndex = -1) 그대로 노출되는 문제가 있었습니다.
+function pbSanitizeArgs(args) {
+    const SECRET_FLAGS = ['--accessToken', '--clientId', '--xuid', '--uuid', '--session']
+    const out = []
+    let maskNext = false
+    for (const raw of args) {
+        if (maskNext) {
+            out.push('**********')
+            maskNext = false
+            continue
+        }
+        const a = String(raw)
+        if (SECRET_FLAGS.indexOf(a) >= 0) {
+            out.push(a)
+            maskNext = true
+            continue
+        }
+        // JWT 형태 (eyJ... ) 는 통째로 가립니다.
+        if (/^eyJ[A-Za-z0-9_-]{8,}/.test(a)) {
+            out.push('**********(토큰)')
+            continue
+        }
+        // 32자리 16진수는 UUID 로 보고 가립니다.
+        if (/^[0-9a-fA-F]{32}$/.test(a)) {
+            out.push('**********(uuid)')
+            continue
+        }
+        out.push(a)
+    }
+    return out
+}

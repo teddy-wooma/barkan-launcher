@@ -289,6 +289,10 @@ async function resolveLatestRelease(url) {
 }
 
 async function downloadToFile(url, destination, onProgress, expectedSha1) {
+    const logStart = Date.now()
+    launchLog('DOWNLOAD', '시작 : ' + url)
+    launchLog('DOWNLOAD', '  → 저장 : ' + destination)
+    if (expectedSha1) { launchLog('DOWNLOAD', '  → 기대 sha1 : ' + expectedSha1) }
     const response = await fetch(url, {
         redirect: 'follow',
         headers: { 'user-agent': `BarkanLauncher/${app.getVersion()}` },
@@ -316,6 +320,7 @@ async function downloadToFile(url, destination, onProgress, expectedSha1) {
         }
     })
 
+    launchLog('DOWNLOAD', '  → 완료 : ' + received + 'B / ' + total + 'B  (' + ((Date.now() - logStart) / 1000).toFixed(1) + '초)')
     const { pipeline } = require('stream/promises')
     await pipeline(Readable.fromWeb(response.body), counter, fs.createWriteStream(destination))
 
@@ -329,6 +334,8 @@ async function downloadToFile(url, destination, onProgress, expectedSha1) {
 
 // 매니페스트와 SHA1 이 같으면 건너뛰고, zip 을 풀거나 다시 압축하지 않습니다. (그러면 SHA1 이 달라집니다)
 ipcMain.handle('syncServerResourcePack', async (event, options) => {
+    launchLogSection('서버 리소스팩 동기화')
+    launchLog('RSPACK', '요청 : ' + JSON.stringify(options))
     const { directory, manifestUrl, fileName } = options || {}
 
     if(typeof directory !== 'string' || directory.length === 0){
@@ -411,6 +418,8 @@ ipcMain.handle('syncServerResourcePack', async (event, options) => {
 })
 
 ipcMain.handle('syncResourcePack', async (event, options) => {
+    launchLogSection('리소스팩 동기화')
+    launchLog('RSPACK', '요청 : ' + JSON.stringify(options))
     const { url, directory, subdirectory, fileName } = options || {}
 
     if(typeof url !== 'string' || !/^https:\/\//i.test(url)){
@@ -673,6 +682,8 @@ async function writeModState(statePath, data) {
 }
 
 ipcMain.handle('syncMods', async (event, options) => {
+    launchLogSection('모드 동기화')
+    launchLog('MODS', '요청 : ' + JSON.stringify(options))
     const { directory, disabledUrls, serverAddress, quickPlayAddress } = options || {}
     if(typeof directory !== 'string' || directory.length === 0){
         return { ok: false, reason: '게임 폴더를 알 수 없습니다.', items: [] }
@@ -1164,10 +1175,12 @@ function getPlatformIcon(filename){
     return path.join(__dirname, 'app', 'assets', 'images', `${filename}.${ext}`)
 }
 
+app.on('ready', launchLogSystemInfo)
 app.on('ready', createWindow)
 app.on('ready', createMenu)
 
 app.on('window-all-closed', () => {
+    launchLog('SYS', '모든 창이 닫혀 런처를 종료합니다.')
     if (process.platform !== 'darwin') {
         app.quit()
     }
@@ -1177,4 +1190,109 @@ app.on('activate', () => {
     if (win === null) {
         createWindow()
     }
+})
+
+// ===== 런처 진단 로그 =====
+// 플레이 버튼을 누른 시점부터의 모든 과정을 파일로 남깁니다.
+//   위치: <userData>/logs/launcher.log     (예: %APPDATA%\Barkan Launcher\logs\launcher.log)
+//
+// 목적: 게임이 logs/latest.log 를 만들기 전에 실패하면 아무 흔적도 남지 않습니다.
+//       ("왜 게임이 안 켜지나" 를 알 수 없게 되는 문제) 그 구간을 기록합니다.
+
+const LAUNCH_LOG_MAX_BYTES = 8 * 1024 * 1024
+let launchLogFile = null
+let launchLogReady = false
+
+function launchLogPath() {
+    if (launchLogFile == null) {
+        launchLogFile = path.join(app.getPath('userData'), 'logs', 'launcher.log')
+    }
+    return launchLogFile
+}
+
+function launchLogTimestamp() {
+    const d = new Date()
+    const p = n => String(n).padStart(2, '0')
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' '
+        + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + '.'
+        + String(d.getMilliseconds()).padStart(3, '0')
+}
+
+function launchLogEnsure() {
+    if (launchLogReady) {
+        return
+    }
+    const file = launchLogPath()
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    try {
+        // 무한히 커지지 않게, 일정 크기를 넘으면 한 번만 옮겨 둡니다.
+        if (fs.existsSync(file) && fs.statSync(file).size > LAUNCH_LOG_MAX_BYTES) {
+            fs.renameSync(file, file + '.old')
+        }
+    } catch (err) { /* 무시 */ }
+    launchLogReady = true
+}
+
+function launchLog(scope, message) {
+    try {
+        launchLogEnsure()
+        let text
+        if (message == null) {
+            text = ''
+        } else if (typeof message === 'string') {
+            text = message
+        } else if (message instanceof Error) {
+            text = message.stack || message.message
+        } else {
+            try { text = JSON.stringify(message) } catch (err) { text = String(message) }
+        }
+        fs.appendFileSync(launchLogPath(), '[' + launchLogTimestamp() + '] [' + scope + '] ' + text + '\n', 'utf8')
+    } catch (err) {
+        // 로그를 못 써도 앱 동작에는 영향이 없게 합니다.
+    }
+}
+
+function launchLogSection(title) {
+    launchLog('----', '')
+    launchLog('----', '==================== ' + title + ' ====================')
+}
+
+function launchLogSystemInfo() {
+    const cpus = os.cpus() || []
+    launchLogSection('런처 시작')
+    launchLog('SYS', '런처 버전   : ' + app.getVersion())
+    launchLog('SYS', '플랫폼      : ' + process.platform + ' / ' + process.arch)
+    launchLog('SYS', 'OS          : ' + os.type() + ' ' + os.release() + ' (빌드 ' + os.version() + ')')
+    launchLog('SYS', 'CPU         : ' + ((cpus[0] || {}).model || '?') + '  (' + cpus.length + ' 코어)')
+    launchLog('SYS', '메모리      : 전체 ' + (os.totalmem() / 1073741824).toFixed(1) + 'GB / 여유 ' + (os.freemem() / 1073741824).toFixed(1) + 'GB')
+    launchLog('SYS', 'Electron    : ' + process.versions.electron + '   Chrome ' + process.versions.chrome + '   Node ' + process.versions.node)
+    launchLog('SYS', 'userData    : ' + app.getPath('userData'))
+    launchLog('SYS', 'appData     : ' + app.getPath('appData'))
+    launchLog('SYS', '실행 파일   : ' + app.getPath('exe'))
+    launchLog('SYS', '개발 모드   : ' + isDev)
+}
+
+// 렌더러(화면 쪽)에서 보내는 로그를 받아 같은 파일에 씁니다.
+ipcMain.on('launcherLog', (event, scope, message) => {
+    launchLog(scope || 'UI', message)
+})
+
+// 로그 파일이 있는 폴더를 열어 줍니다. (사용자가 파일을 찾기 쉽게)
+ipcMain.on('launcherLogOpenFolder', () => {
+    try {
+        launchLogEnsure()
+        shell.showItemInFolder(launchLogPath())
+    } catch (err) {
+        launchLog('WARN', '로그 폴더 열기 실패: ' + (err.message || err))
+    }
+})
+
+ipcMain.handle('launcherLogPathGet', () => launchLogPath())
+
+// 예기치 못한 오류도 남깁니다. (이게 없으면 조용히 죽습니다)
+process.on('uncaughtException', (err) => {
+    launchLog('FATAL', 'uncaughtException: ' + (err && err.stack ? err.stack : String(err)))
+})
+process.on('unhandledRejection', (reason) => {
+    launchLog('FATAL', 'unhandledRejection: ' + (reason && reason.stack ? reason.stack : String(reason)))
 })
