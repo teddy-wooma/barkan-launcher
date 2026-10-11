@@ -1,6 +1,6 @@
 const fs        = require('fs-extra')
 const path      = require('path')
-const { ipcRenderer, shell } = require('electron')
+const { ipcRenderer, shell, webUtils } = require('electron')
 const { SHELL_OPCODE } = require('./ipcconstants')
 
 // Group #1: File Name (without .disabled, if any)
@@ -13,6 +13,34 @@ const SHADER_REGEX = /^(.+)\.zip$/
 const SHADER_OPTION = /shaderPack=(.+)/
 const SHADER_DIR = 'shaderpacks'
 const SHADER_CONFIG = 'optionsshaders.txt'
+
+
+// 드래그 앤 드롭으로 받은 파일의 실제 경로를 구합니다.
+//
+// Electron 32 에서 File.path 가 제거되었습니다. (39 에서는 undefined)
+// 그래서 f.path 를 그대로 쓰면 moveSync(undefined, ...) 로 실패하고,
+// 파일을 끌어다 놓아도 아무 일도 일어나지 않았습니다.
+// webUtils.getPathForFile 이 그 대체 API 입니다.
+function resolveDroppedPath(file) {
+    if (file == null) {
+        return null
+    }
+    // 구버전 Electron 호환 (path 가 아직 있는 경우)
+    if (typeof file.path === 'string' && file.path.length > 0) {
+        return file.path
+    }
+    try {
+        if (webUtils != null && typeof webUtils.getPathForFile === 'function') {
+            const resolved = webUtils.getPathForFile(file)
+            if (typeof resolved === 'string' && resolved.length > 0) {
+                return resolved
+            }
+        }
+    } catch (err) {
+        console.error('드롭한 파일의 경로를 읽지 못했습니다.', err)
+    }
+    return null
+}
 
 
 exports.validateDir = function(dir) {
@@ -60,13 +88,26 @@ exports.addDropinMods = function(files, modsdir) {
 
     exports.validateDir(modsdir)
 
+    let added = 0
     for(let f of files) {
-        if(MOD_REGEX.exec(f.name) != null) {
-            fs.moveSync(f.path, path.join(modsdir, f.name))
+        if(MOD_REGEX.exec(f.name) == null) {
+            continue
+        }
+        const sourcePath = resolveDroppedPath(f)
+        if(sourcePath == null) {
+            console.error('드롭한 모드의 경로를 알 수 없습니다: ' + f.name)
+            continue
+        }
+        try {
+            fs.moveSync(sourcePath, path.join(modsdir, f.name), { overwrite: true })
+            added++
+        } catch (err) {
+            console.error('모드를 옮기지 못했습니다: ' + f.name, err)
         }
     }
-
+    return added
 }
+
 
 
 exports.deleteDropinMod = async function(modsDir, fullName){
@@ -164,10 +205,23 @@ exports.addShaderpacks = function(files, instanceDir) {
 
     exports.validateDir(p)
 
+    let added = 0
     for(let f of files) {
-        if(SHADER_REGEX.exec(f.name) != null) {
-            fs.moveSync(f.path, path.join(p, f.name))
+        if(SHADER_REGEX.exec(f.name) == null) {
+            continue
+        }
+        const sourcePath = resolveDroppedPath(f)
+        if(sourcePath == null) {
+            console.error('드롭한 셰이더팩의 경로를 알 수 없습니다: ' + f.name)
+            continue
+        }
+        try {
+            fs.moveSync(sourcePath, path.join(p, f.name), { overwrite: true })
+            added++
+        } catch (err) {
+            console.error('셰이더팩을 옮기지 못했습니다: ' + f.name, err)
         }
     }
-
+    return added
 }
+

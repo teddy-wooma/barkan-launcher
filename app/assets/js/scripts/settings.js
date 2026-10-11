@@ -863,7 +863,27 @@ function bindDropinModFileSystemButton(){
         fsBtn.removeAttribute('drag')
         e.preventDefault()
 
-        DropinModUtil.addDropinMods(e.dataTransfer.files, CACHE_SETTINGS_MODS_DIR)
+        const dropped = e.dataTransfer.files
+        let added = 0
+        try {
+            added = DropinModUtil.addDropinMods(dropped, CACHE_SETTINGS_MODS_DIR)
+        } catch(err) {
+            console.error('드롭인 모드 추가 중 오류', err)
+        }
+
+        // 조용히 실패하지 않게 알려 줍니다.
+        // (예전에는 경로를 못 읽어도 아무 메시지가 없어서 원인을 알 수 없었습니다)
+        if(dropped != null && dropped.length > 0 && added === 0) {
+            const names = Array.from(dropped).map(f => f.name).join(', ')
+            setOverlayContent(
+                '모드를 추가하지 못했습니다',
+                'jar / zip / litemod 파일만 넣을 수 있습니다.' + String.fromCharCode(10) + String.fromCharCode(10) + '시도한 파일: ' + names,
+                Lang.queryJS('settings.dropinMods.okButton')
+            )
+            setOverlayHandler(null)
+            toggleOverlay(true)
+        }
+
         await reloadDropinMods()
     }
 }
