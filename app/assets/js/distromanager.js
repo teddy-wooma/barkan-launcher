@@ -4,6 +4,7 @@ const path = require('path')
 const { DistributionAPI } = require('helios-core/common')
 
 const ConfigManager = require('./configmanager')
+const FontCacheDev = require('./fontcachedev')
 
 // -----------------------------------------------------------------------------
 // Distribution Index
@@ -40,13 +41,15 @@ function syncBundledDistribution() {
         return
     }
     try {
-        const bundled = fs.readFileSync(bundledDistroPath, 'UTF-8')
+        const original = fs.readFileSync(bundledDistroPath, 'UTF-8')
+        const bundled = FontCacheDev.enabled() ? JSON.stringify(FontCacheDev.distribution(JSON.parse(original)), null, 4) : original
         const current = fs.existsSync(localDistroPath) ? fs.readFileSync(localDistroPath, 'UTF-8') : null
         if (current !== bundled) {
             fs.outputFileSync(localDistroPath, bundled, 'UTF-8')
         }
     } catch (err) {
 
+        if (FontCacheDev.enabled()) throw err
         console.error('[Distribution] Failed to sync the bundled distribution index.', err)
     }
 }

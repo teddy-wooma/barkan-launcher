@@ -459,7 +459,7 @@ let hasRPC = false
 
 
 const GAME_JOINED_REGEX = /\[.+\]: Sound engine started/
-const GAME_LAUNCH_REGEX = /^\[.+\]: (?:MinecraftForge .+ Initialized|ModLauncher .+ starting: .+|Loading Minecraft .+ with Fabric Loader .+)$/
+const GAME_LAUNCH_REGEX = /^\[.+\]: (?:MinecraftForge .+ Initialized|ModLauncher .+ starting: .+|Loading Minecraft .+ with Fabric Loader .+|Backend library: LWJGL .+)$/
 const MIN_LINGER = 5000
 
 async function dlAsync(login = true) {
@@ -1374,6 +1374,7 @@ function writeIrisProperties(gameDir, packFileName){
 
 
 async function syncRemoteMods(pb){
+    if (pb.fontCacheDev) return
     const { ipcRenderer } = require('electron')
     setLaunchDetails('모드 준비 중..')
 
@@ -1400,6 +1401,7 @@ async function syncRemoteMods(pb){
 
 
 async function syncShadersForLaunch(pb, distro){
+    if (pb.fontCacheDev) return
     const enabled = ConfigManager.getShadersEnabled()
     const quality = ConfigManager.getShaderQuality()
     const mods = distro.rawDistribution.clientMods || []

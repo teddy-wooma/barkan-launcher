@@ -9,6 +9,7 @@ const os                    = require('os')
 const path                  = require('path')
 
 const ConfigManager            = require('./configmanager')
+const FontCacheDev             = require('./fontcachedev')
 
 const logger = LoggerUtil.getLogger('ProcessBuilder')
 
@@ -33,7 +34,8 @@ class ProcessBuilder {
         this.commonDir = ConfigManager.getCommonDirectory()
         this.server = distroServer
         this.vanillaManifest = vanillaManifest
-        this.modManifest = modManifest
+        this.fontCacheDev = FontCacheDev.isProfile(distroServer.rawServer)
+        this.modManifest = FontCacheDev.runtimeManifest(distroServer.rawServer, vanillaManifest, modManifest)
         this.authUser = authUser
         this.launcherVersion = launcherVersion
         this.forgeModListFile = path.join(this.gameDir, 'forgeMods.list')
@@ -195,11 +197,11 @@ class ProcessBuilder {
         this.applyDefaultGameOptions()
         const tempNativePath = path.join(os.tmpdir(), ConfigManager.getTempNativeFolder(), crypto.pseudoRandomBytes(16).toString('hex'))
         process.throwDeprecation = true
-        this.setupLiteLoader()
+        if (!this.fontCacheDev) this.setupLiteLoader()
         logger.info('Using liteloader:', this.usingLiteLoader)
-        this.usingFabricLoader = this.server.modules.some(mdl => mdl.rawModule.type === Type.Fabric)
+        this.usingFabricLoader = !this.fontCacheDev && this.server.modules.some(mdl => mdl.rawModule.type === Type.Fabric)
         logger.info('Using fabric loader:', this.usingFabricLoader)
-        const modObj = this.resolveModConfiguration(ConfigManager.getModConfiguration(this.server.rawServer.id).mods, this.server.modules)
+        const modObj = this.fontCacheDev ? { fMods: [], lMods: [] } : this.resolveModConfiguration(ConfigManager.getModConfiguration(this.server.rawServer.id).mods, this.server.modules)
 
 
         if(!mcVersionAtLeast('1.13', this.server.rawServer.minecraftVersion)){
@@ -506,7 +508,7 @@ class ProcessBuilder {
         const argDiscovery = /\${*(.*)}/
 
 
-        let args = this.vanillaManifest.arguments.jvm
+        let args = this.fontCacheDev ? structuredClone(this.vanillaManifest.arguments.jvm) : this.vanillaManifest.arguments.jvm
 
 
         if(this.modManifest.arguments.jvm != null) {
@@ -529,6 +531,10 @@ class ProcessBuilder {
         args = args.concat(ConfigManager.getJVMOptions(this.server.rawServer.id))
 
 
+        args = args.concat(FontCacheDev.jvmArguments({
+            server: this.server.rawServer, vanilla: this.vanillaManifest, commonDir: this.commonDir, gameDir: this.gameDir,
+            bundleDir: path.join(__dirname, '..', 'font-cache-dev')
+        }))
         args.push(this.modManifest.mainClass)
 
 
@@ -755,7 +761,7 @@ class ProcessBuilder {
     classpathArg(mods, tempNativePath){
         let cpArgs = []
 
-        if(!mcVersionAtLeast('1.17', this.server.rawServer.minecraftVersion) || this.usingFabricLoader) {
+        if(this.fontCacheDev || !mcVersionAtLeast('1.17', this.server.rawServer.minecraftVersion) || this.usingFabricLoader) {
 
 
             const version = this.vanillaManifest.id
@@ -820,6 +826,10 @@ class ProcessBuilder {
 
 
                         if(!shouldExclude){
+                            if (this.fontCacheDev) {
+                                fs.writeFileSync(path.join(tempNativePath, fileName), zipEntries[i].getData())
+                                continue
+                            }
                             fs.writeFile(path.join(tempNativePath, fileName), zipEntries[i].getData(), (err) => {
                                 if(err){
                                     logger.error('Error while extracting native library:', err)
@@ -834,7 +844,10 @@ class ProcessBuilder {
 
                     const regexTest = nativesRegex.exec(lib.name)
 
-                    const arch = regexTest[2] ?? 'x64'
+                    let arch = regexTest[2] ?? 'x64'
+                    if (this.fontCacheDev && lib.name.startsWith('org.lwjgl:lwjgl-freetype:') && lib.name.endsWith(':natives-macos-patch')) {
+                        arch = 'x64'
+                    }
 
                     if(arch != process.arch) {
                         continue
@@ -871,6 +884,10 @@ class ProcessBuilder {
 
 
                         if(!shouldExclude){
+                            if (this.fontCacheDev) {
+                                fs.writeFileSync(path.join(tempNativePath, extractName), zipEntries[i].getData())
+                                continue
+                            }
                             fs.writeFile(path.join(tempNativePath, extractName), zipEntries[i].getData(), (err) => {
                                 if(err){
                                     logger.error('Error while extracting native library:', err)
@@ -896,6 +913,7 @@ class ProcessBuilder {
 
 
     _resolveServerLibraries(mods){
+        if (this.fontCacheDev) return {}
         const mdls = this.server.modules
         let libs = {}
 

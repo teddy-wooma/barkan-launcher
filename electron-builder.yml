@@ -37,6 +37,9 @@ files:
   - '!.eb-cache'
   - '!.verify'
   - '!.userdata'
+  - '!.font-cache-dev'
+  - '!fontcache-dev-main.cjs'
+  - '!app/assets/font-cache-dev'
   - '!_branding-original'
   - '!_private'
 

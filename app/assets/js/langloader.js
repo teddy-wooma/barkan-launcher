@@ -78,7 +78,7 @@ exports.getSelectedLanguage = function(){
             const path = require('path')
             const candidates = [
                 path.join(app.getPath('userData'), 'config.json'),
-                path.join(app.getPath('appData'), '.barkanlauncher', 'config.json')
+                ...(process.env.BARKAN_FONT_CACHE_DEV === '1' ? [] : [path.join(app.getPath('appData'), '.barkanlauncher', 'config.json')])
             ]
             for(const candidate of candidates){
                 try {

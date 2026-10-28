@@ -179,7 +179,7 @@ exports.isFirstLaunch = function(){
 
 
 exports.getTempNativeFolder = function(){
-    return 'WCNatives'
+    return process.env.BARKAN_FONT_CACHE_DEV === '1' ? 'BarkanFontCacheDevNatives' : 'WCNatives'
 }
 
 
