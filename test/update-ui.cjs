@@ -125,7 +125,7 @@ test('IPC dispatch routes all macOS actions to the custom updater and keeps Wind
         let handler
         const calls = []
         const context = vm.createContext({
-            ipcMain: { on: (_channel, fn) => { handler = fn } }, process: { platform },
+            ipcMain: { on: (_channel, fn) => { handler = fn } }, process: { platform, env: {} },
             macUpdater: { check: sender => calls.push(['mac-check', sender]), install: sender => calls.push(['mac-install', sender]) },
             autoUpdater: { checkForUpdates: async () => { calls.push(['win-check']) }, quitAndInstall: () => calls.push(['win-install']) }
         })

@@ -18,6 +18,7 @@
     "dist:linux": "npm run dist -- -l",
     "lint": "eslint .",
     "test:updates": "node --test test/mac-updater.cjs test/update-ui.cjs",
+    "test:fontcache-dev": "node --test test/fontcache-dev-policy.cjs test/fontcache-dev-entry.cjs test/fontcache-dev-integration.cjs test/fontcache-dev-packaging.cjs",
     "check": "electron tools/check-electron.cjs",
     "distro:build": "node tools/build-distribution.cjs",
     "distro:verify": "node tools/verify-distribution.cjs",

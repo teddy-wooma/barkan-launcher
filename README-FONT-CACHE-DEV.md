@@ -31,6 +31,17 @@ node tools/start-fontcache-dev.cjs 127.0.0.1:25567
 
 ## 검증 상태
 
+게임·Electron GUI를 실행하지 않는 회귀 테스트는 다음 명령으로 실행합니다(Node 22 이상).
+
+```sh
+npm ci --ignore-scripts
+npm run test:fontcache-dev
+```
+
+`test/fontcache-dev-*.cjs`는 개발 프로필 선택, 설정·계정·게임·natives 격리, 일반 실행 경로 보존, 자동업데이트·운영 팩·모드·셰이더 동기화 차단, 실행 인자의 vanilla 진입점과 Javaagent 순서, 파일 무결성 실패, 일반 패키지의 개발 파일 제외를 검증합니다. PR 및 이 개발 브랜치 push 시 Node 22의 Windows/macOS/Linux에서 같은 테스트를 실행합니다. 패키지 파일 선택 규칙만 검사하며 설치파일을 빌드하거나 공개하지 않습니다.
+
+두 agent JAR은 저장소의 실제 파일과 고정 SHA256을 대조합니다. 공식 Minecraft client JAR은 다운로드하거나 실행하지 않습니다. 정상 client 경로는 명시적인 테스트 fixture의 SHA1만 대체하고, 손상·누락 client와 agent 거부 경로는 실제 해시·파일 검사로 검증합니다. 실행 인자 통합 검사는 Java 프로세스 생성을 stub으로 대체합니다.
+
 공식 client 및 agent 해시, 원격 원본 Git blob, 패치 적용, JavaScript 문법, 개발 데이터 격리와 실행 인자를 정적으로 검산했습니다.
 agent 자체의 이전 구조 검사에서는 픽셀·글리프 배치 보존과 HUD draw 수 회복을 확인했습니다. 자세한 범위는 함께 제공한 `integration-notes.txt`와 `results/RESULTS.txt`를 따릅니다.
 

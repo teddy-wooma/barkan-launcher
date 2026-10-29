@@ -1,0 +1,30 @@
+name: Font cache dev regression tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - codex/font-cache-dev-1.21.11-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install JavaScript dependencies without starting Electron
+        run: npm ci --ignore-scripts
+      - name: Verify isolated dev profile and production packaging rules
+        run: npm run test:fontcache-dev
+      - name: Verify normal server entry and update UI
+        run: node --test test/server-entry.cjs test/update-ui.cjs
