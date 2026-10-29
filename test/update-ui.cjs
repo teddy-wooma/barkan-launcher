@@ -5,8 +5,13 @@ const path = require('node:path')
 const vm = require('node:vm')
 const { EventEmitter } = require('node:events')
 
-const source = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
-const section = (text, start, end) => text.slice(text.indexOf(start), text.indexOf(end, text.indexOf(start)))
+const source = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8').replace(/\r\n/g, '\n')
+const section = (text, start, end) => {
+    const from = text.indexOf(start)
+    const to = text.indexOf(end, from)
+    assert.ok(from >= 0 && to > from, `Missing executable section: ${start}`)
+    return text.slice(from, to)
+}
 
 function ui(platform = 'darwin') {
     const ipcRenderer = new EventEmitter()
