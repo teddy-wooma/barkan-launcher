@@ -1,0 +1,16 @@
+Third-party components in this dev integration bundle
+
+ASM 9.10.1, https://asm.ow2.io/
+Copyright (c) 2000-2011 INRIA, France Telecom. All rights reserved.
+License: BSD-3-Clause; complete text supplied in licenses/ASM-LICENSE.txt.
+Both font-image-cache-agent.jar and font-gpu-cache-agent.jar embed 38
+unmodified org/objectweb/asm/ core classes, verified against upstream ASM
+9.10.1. Keep this notice and the complete license with redistributions.
+The original launcher source carries the MIT License supplied as
+licenses/LAUNCHER-LICENSE.txt (in the outer integration bundle). It credits Daniel D. Scalzi, 2017-2026.
+These notices do not grant a new public license to the project's own agent
+code. Project-owner distribution authorization remains separate.
+
+No Minecraft, JDK, LWJGL, resource-pack assets, game world, user settings,
+accounts or credentials are included. This is a selected source patch and
+its own Java agents, not a complete launcher checkout or installer.

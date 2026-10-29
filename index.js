@@ -1,3 +1,6 @@
+if (process.env.BARKAN_FONT_CACHE_DEV === '1' && process.env.BARKAN_FONT_CACHE_DEV_ENTRY !== 'isolated') {
+    throw new Error('글꼴 캐시 개발판은 격리 진입점으로 실행해 주세요.')
+}
 const remoteMain = require('@electron/remote/main')
 remoteMain.initialize()
 
@@ -54,6 +57,10 @@ function initAutoUpdater(event, data) {
 }
 
 ipcMain.on('autoUpdateAction', (event, arg, data) => {
+    if (process.env.BARKAN_FONT_CACHE_DEV === '1') {
+        event.sender.send('autoUpdateNotification', arg === 'initAutoUpdater' ? 'ready' : 'update-not-available')
+        return
+    }
     switch(arg){
         case 'initAutoUpdater':
             console.log('Initializing auto updater.')
@@ -199,7 +206,7 @@ ipcMain.handle('fetchNews', (event, url) => {
 function readConfiguredLanguage() {
     const candidates = [
         path.join(app.getPath('userData'), 'config.json'),
-        path.join(app.getPath('appData'), '.barkanlauncher', 'config.json')
+        ...(process.env.BARKAN_FONT_CACHE_DEV === '1' ? [] : [path.join(app.getPath('appData'), '.barkanlauncher', 'config.json')])
     ]
     for(const candidate of candidates){
         try {

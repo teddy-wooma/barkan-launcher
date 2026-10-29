@@ -1,0 +1,382 @@
+{
+  "status": "HANDOFF_WITH_EXPLICIT_VERIFICATION_LIMITS",
+  "scope": "desktop_official_1.21.11_existing_BG_diagnostics_and_prior_headless_verification",
+  "new_actual_client_or_JVM_tests_started_for_delivery": false,
+  "final_controlled_FPS_comparison": "omitted_at_user_request; performance_equivalence_not_verified",
+  "final_loading_process_memory_comparison": "omitted_at_user_request; loading_RAM_equivalence_not_verified",
+  "Android_Freedreno_tested": false,
+  "GPU_storage_full_TextureManager_comparison": {
+    "status": "existing_BG_TextureManager_structure_observation_confirmed_by_root_and_independent_reviewer",
+    "not_process_RAM_or_loading_peak": true,
+    "includes_bootstrap_all_pool_groups_and_fallback": true,
+    "observed_format_bytes_equal_driver_texture_bytes": true,
+    "controlled_glyph_warmup_before_full_glyph_audit": [
+      {
+        "label": "BG-OFF-1",
+        "pages": 1359,
+        "bytes": 356057088,
+        "MiB": 339.5625
+      },
+      {
+        "label": "BG-GLOBAL-ON-1",
+        "pages": 5,
+        "bytes": 1114112,
+        "MiB": 1.0625
+      },
+      {
+        "label": "BG-SMALL-ON-1",
+        "pages": 6,
+        "bytes": 1376256,
+        "MiB": 1.3125
+      }
+    ],
+    "small_vs_global_added_bytes": 262144,
+    "small_vs_OFF_before_audit_reduction_percent": 99.6134732192159,
+    "small_vs_OFF_after_audit_reduction_percent": 99.5401876034578,
+    "after_supplementary_glyph_preview_and_full_glyph_audit_completed": [
+      {
+        "label": "BG-OFF-1",
+        "pages": 1360,
+        "bytes": 356319232,
+        "MiB": 339.8125
+      },
+      {
+        "label": "BG-GLOBAL-ON-1",
+        "pages": 6,
+        "bytes": 1376256,
+        "MiB": 1.3125
+      },
+      {
+        "label": "BG-SMALL-ON-1",
+        "pages": 7,
+        "bytes": 1638400,
+        "MiB": 1.5625
+      }
+    ],
+    "additional_RGBA_page_cause": "Observed by supplementary glyph-preview phase; not attributed to the audit operation itself"
+  },
+  "runs": [
+    {
+      "label": "BG-OFF-1",
+      "source_summary": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-OFF-1/trial-summary.json",
+      "source_summary_sha256": "1cde2364d17bafb4d09533e8d47bef93905a7e9cca99056bea2fdd005d7f553e",
+      "source_HUD_diagnostic": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-OFF-1/diagnostic/world-hud-diagnostic.json",
+      "source_HUD_diagnostic_sha256": "049ac11e9c3984522fe2438000be5ca24d85f1c4b7453776be72b9d28a700ae4",
+      "source_scope": "diagnostic_only_not_final_FPS",
+      "trial_success": true,
+      "diagnostic_success": true,
+      "font_integrity_success": true,
+      "font_integrity_failures": [],
+      "GPU_integrity_success": true,
+      "GPU_integrity_failures": [],
+      "native_shutdown_zero": true,
+      "GPU_shutdown_zero": true,
+      "provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "native_pixel_fingerprint": {
+        "semantic_sha256": "2b2a016e94b4516ef88aa107362a162295a3042c6f07c5394ab59a524e1af5b7",
+        "logical_resource_format_size_groups": 1389,
+        "live_physical_entries_audited": 1389,
+        "unique_resource_pixel_conflicts": [],
+        "decode_digest_mismatches": 0,
+        "pixel_copies": 0,
+        "identity_and_refcounts_excluded_from_hash": true
+      },
+      "GPU_glyph_coverage": {
+        "success": true,
+        "semantic_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+        "requested_font_codepoints": 11325,
+        "glyphs_hashed": 11325,
+        "textured_glyphs_hashed": 10968,
+        "bitmap_textured_glyphs": 10951,
+        "nonempty_bitmap_textured_glyphs": 10951,
+        "gpu_pages_read": 362,
+        "rgba_pages_read": 361,
+        "red_pages_read": 1,
+        "glyph_rectangle_pixels_hashed_including_references": 13147434,
+        "readback_buffer_bytes": 262144,
+        "preexisting_gl_errors": [],
+        "driver_texture_dimensions_checked": true,
+        "per_page_readback_gl_error_checked": true,
+        "uninitialized_regions_hashed": false,
+        "after_measurement": true,
+        "no_image_resampling": true,
+        "coverage": "exact controlled-warmup font/codepoints plus representative glyph screen samples; occupied upload rectangles only",
+        "semantic_hash_excludes": "native pointers, GPU object/id, page allocation placement; includes glyph metrics and actual occupied GPU pixel bytes"
+      },
+      "post_scene_audit_success": true,
+      "post_scene_provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "post_scene_GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "GPU_agent_SHA256": "7a16ee765b9ddc8dd52ea81445bd755c26db1acf2b7b7e966e4648f6976d2b4a",
+      "native_agent_SHA256": "fe68efc2eaaa8db3a139ee48eea59e779e05d231a444580deab0eac78c021c76",
+      "HUD_counts": {
+        "submitted_glyphs": {
+          "total": 54662,
+          "minimum": 151,
+          "per_rendered_frame_mean": 151.0,
+          "maximum": 151
+        },
+        "sorted_glyph_page_switches": {
+          "total": 362,
+          "minimum": 1,
+          "per_rendered_frame_mean": 1.0,
+          "maximum": 1
+        },
+        "recorded_gui_meshes": {
+          "total": 2534,
+          "minimum": 7,
+          "per_rendered_frame_mean": 7.0,
+          "maximum": 7
+        },
+        "driver_draws_gui": {
+          "total": 2534,
+          "minimum": 7,
+          "per_rendered_frame_mean": 7.0,
+          "maximum": 7
+        },
+        "driver_draws_gui_font": {
+          "total": 724,
+          "minimum": 2,
+          "per_rendered_frame_mean": 2.0,
+          "maximum": 2
+        },
+        "native_gl_bind_calls_gui": {
+          "total": 1810,
+          "minimum": 5,
+          "per_rendered_frame_mean": 5.0,
+          "maximum": 5
+        },
+        "gui_index_count": {
+          "total": 701556,
+          "minimum": 1938,
+          "per_rendered_frame_mean": 1938.0,
+          "maximum": 1938
+        },
+        "gui_font_index_count": {
+          "total": 655944,
+          "minimum": 1812,
+          "per_rendered_frame_mean": 1812.0,
+          "maximum": 1812
+        }
+      }
+    },
+    {
+      "label": "BG-GLOBAL-ON-1",
+      "source_summary": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-GLOBAL-ON-1/trial-summary.json",
+      "source_summary_sha256": "8a9ce6be964d44c118313cb2baf9d079951567b862fd04646e617d809c4ce709",
+      "source_HUD_diagnostic": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-GLOBAL-ON-1/diagnostic/world-hud-diagnostic.json",
+      "source_HUD_diagnostic_sha256": "953a65f1dfca593b991dade8d53646f897fefaf16179703cdb4acf92f1504aaa",
+      "source_scope": "diagnostic_only_not_final_FPS",
+      "trial_success": true,
+      "diagnostic_success": true,
+      "font_integrity_success": true,
+      "font_integrity_failures": [],
+      "GPU_integrity_success": true,
+      "GPU_integrity_failures": [],
+      "native_shutdown_zero": true,
+      "GPU_shutdown_zero": true,
+      "provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "native_pixel_fingerprint": {
+        "semantic_sha256": "2b2a016e94b4516ef88aa107362a162295a3042c6f07c5394ab59a524e1af5b7",
+        "logical_resource_format_size_groups": 1389,
+        "live_physical_entries_audited": 1389,
+        "unique_resource_pixel_conflicts": [],
+        "decode_digest_mismatches": 0,
+        "pixel_copies": 0,
+        "identity_and_refcounts_excluded_from_hash": true
+      },
+      "GPU_glyph_coverage": {
+        "success": true,
+        "semantic_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+        "requested_font_codepoints": 11325,
+        "glyphs_hashed": 11325,
+        "textured_glyphs_hashed": 10968,
+        "bitmap_textured_glyphs": 10951,
+        "nonempty_bitmap_textured_glyphs": 10951,
+        "gpu_pages_read": 5,
+        "rgba_pages_read": 4,
+        "red_pages_read": 1,
+        "glyph_rectangle_pixels_hashed_including_references": 13147434,
+        "readback_buffer_bytes": 262144,
+        "preexisting_gl_errors": [],
+        "driver_texture_dimensions_checked": true,
+        "per_page_readback_gl_error_checked": true,
+        "uninitialized_regions_hashed": false,
+        "after_measurement": true,
+        "no_image_resampling": true,
+        "coverage": "exact controlled-warmup font/codepoints plus representative glyph screen samples; occupied upload rectangles only",
+        "semantic_hash_excludes": "native pointers, GPU object/id, page allocation placement; includes glyph metrics and actual occupied GPU pixel bytes"
+      },
+      "post_scene_audit_success": true,
+      "post_scene_provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "post_scene_GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "GPU_agent_SHA256": "7a16ee765b9ddc8dd52ea81445bd755c26db1acf2b7b7e966e4648f6976d2b4a",
+      "native_agent_SHA256": "fe68efc2eaaa8db3a139ee48eea59e779e05d231a444580deab0eac78c021c76",
+      "HUD_counts": {
+        "submitted_glyphs": {
+          "total": 167459,
+          "minimum": 151,
+          "per_rendered_frame_mean": 151.0,
+          "maximum": 151
+        },
+        "sorted_glyph_page_switches": {
+          "total": 57668,
+          "minimum": 52,
+          "per_rendered_frame_mean": 52.0,
+          "maximum": 52
+        },
+        "recorded_gui_meshes": {
+          "total": 64322,
+          "minimum": 58,
+          "per_rendered_frame_mean": 58.0,
+          "maximum": 58
+        },
+        "driver_draws_gui": {
+          "total": 64322,
+          "minimum": 58,
+          "per_rendered_frame_mean": 58.0,
+          "maximum": 58
+        },
+        "driver_draws_gui_font": {
+          "total": 58777,
+          "minimum": 53,
+          "per_rendered_frame_mean": 53.0,
+          "maximum": 53
+        },
+        "native_gl_bind_calls_gui": {
+          "total": 62104,
+          "minimum": 56,
+          "per_rendered_frame_mean": 56.0,
+          "maximum": 56
+        },
+        "gui_index_count": {
+          "total": 2149242,
+          "minimum": 1938,
+          "per_rendered_frame_mean": 1938.0,
+          "maximum": 1938
+        },
+        "gui_font_index_count": {
+          "total": 2009508,
+          "minimum": 1812,
+          "per_rendered_frame_mean": 1812.0,
+          "maximum": 1812
+        }
+      }
+    },
+    {
+      "label": "BG-SMALL-ON-1",
+      "source_summary": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-SMALL-ON-1/trial-summary.json",
+      "source_summary_sha256": "6490314ef45e8b9d8d5dfa3014aa0114705c0796899fd47edfb08e6d1bc8e5af",
+      "source_HUD_diagnostic": "ops/font-gpu-hud-fix-20261028/diagnostic/background/runs/BG-SMALL-ON-1/diagnostic/world-hud-diagnostic.json",
+      "source_HUD_diagnostic_sha256": "21ab4d2004ecef038e7257ae09c337ed61653e786dae22920304a0755cd25181",
+      "source_scope": "diagnostic_only_not_final_FPS",
+      "trial_success": true,
+      "diagnostic_success": true,
+      "font_integrity_success": true,
+      "font_integrity_failures": [],
+      "GPU_integrity_success": true,
+      "GPU_integrity_failures": [],
+      "native_shutdown_zero": true,
+      "GPU_shutdown_zero": true,
+      "provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "native_pixel_fingerprint": {
+        "semantic_sha256": "2b2a016e94b4516ef88aa107362a162295a3042c6f07c5394ab59a524e1af5b7",
+        "logical_resource_format_size_groups": 1389,
+        "live_physical_entries_audited": 1389,
+        "unique_resource_pixel_conflicts": [],
+        "decode_digest_mismatches": 0,
+        "pixel_copies": 0,
+        "identity_and_refcounts_excluded_from_hash": true
+      },
+      "GPU_glyph_coverage": {
+        "success": true,
+        "semantic_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+        "requested_font_codepoints": 11325,
+        "glyphs_hashed": 11325,
+        "textured_glyphs_hashed": 10968,
+        "bitmap_textured_glyphs": 10951,
+        "nonempty_bitmap_textured_glyphs": 10951,
+        "gpu_pages_read": 6,
+        "rgba_pages_read": 5,
+        "red_pages_read": 1,
+        "glyph_rectangle_pixels_hashed_including_references": 13147434,
+        "readback_buffer_bytes": 262144,
+        "preexisting_gl_errors": [],
+        "driver_texture_dimensions_checked": true,
+        "per_page_readback_gl_error_checked": true,
+        "uninitialized_regions_hashed": false,
+        "after_measurement": true,
+        "no_image_resampling": true,
+        "coverage": "exact controlled-warmup font/codepoints plus representative glyph screen samples; occupied upload rectangles only",
+        "semantic_hash_excludes": "native pointers, GPU object/id, page allocation placement; includes glyph metrics and actual occupied GPU pixel bytes"
+      },
+      "post_scene_audit_success": true,
+      "post_scene_provider_metadata_sha256": "fc20c0ae13fa34918fb5a3d371501d21cbfd7dcf43072275fe6f6d2ed46b1912",
+      "post_scene_GPU_glyph_pixels_and_metrics_sha256": "1eb9f1dfcc433bae65e6d6ec2ceecf6f0b7251906a3c5995e108ec830ca84b40",
+      "GPU_agent_SHA256": "c294ad8e72405106202588694d3f7a34de023d2a0eda1c1c24df542bbf5dc0b2",
+      "native_agent_SHA256": "fe68efc2eaaa8db3a139ee48eea59e779e05d231a444580deab0eac78c021c76",
+      "HUD_counts": {
+        "submitted_glyphs": {
+          "total": 87278,
+          "minimum": 151,
+          "per_rendered_frame_mean": 151.0,
+          "maximum": 151
+        },
+        "sorted_glyph_page_switches": {
+          "total": 578,
+          "minimum": 1,
+          "per_rendered_frame_mean": 1.0,
+          "maximum": 1
+        },
+        "recorded_gui_meshes": {
+          "total": 4046,
+          "minimum": 7,
+          "per_rendered_frame_mean": 7.0,
+          "maximum": 7
+        },
+        "driver_draws_gui": {
+          "total": 4046,
+          "minimum": 7,
+          "per_rendered_frame_mean": 7.0,
+          "maximum": 7
+        },
+        "driver_draws_gui_font": {
+          "total": 1156,
+          "minimum": 2,
+          "per_rendered_frame_mean": 2.0,
+          "maximum": 2
+        },
+        "native_gl_bind_calls_gui": {
+          "total": 2890,
+          "minimum": 5,
+          "per_rendered_frame_mean": 5.0,
+          "maximum": 5
+        },
+        "gui_index_count": {
+          "total": 1120164,
+          "minimum": 1938,
+          "per_rendered_frame_mean": 1938.0,
+          "maximum": 1938
+        },
+        "gui_font_index_count": {
+          "total": 1047336,
+          "minimum": 1812,
+          "per_rendered_frame_mean": 1812.0,
+          "maximum": 1812
+        }
+      }
+    }
+  ],
+  "equal_semantic_hashes": {
+    "provider_metadata_sha256": true,
+    "GPU_glyph_pixels_and_metrics_sha256": true
+  },
+  "equal_native_resource_pixel_hash": true,
+  "all_existing_audits_and_shutdowns_pass": true,
+  "whole_screenshot_RGB_identical_across_three_current_BG_runs": false,
+  "supplementary_screenshot_limits": "See independent-review/background-integrity-comparison.json and glyph-preview-pixel-differences.json; exact source/occupied GPU pixel+metrics equality does not mean all screenshot PNGs are identical.",
+  "raw_count_files_included": "raw-diagnostic-counts/<label>/{world-hud,world-plain}-{counts.csv,diagnostic.json}",
+  "test_cancellation_scope": "No additional game launch, build or performance test after the user requested omission; BG evidence was collected before that instruction"
+}

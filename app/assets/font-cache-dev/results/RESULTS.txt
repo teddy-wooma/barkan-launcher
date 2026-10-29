@@ -1,0 +1,68 @@
+전달본 확인 결과와 검증 한계
+
+수정본
+  NativeImage 공유 ON을 선행하고, GPU small-text/22/32를 기본으로 한다.
+  원본 PNG RGBA/해상도/chars/provider 순서/advance/ascent/bearings/화면 배치는 유지한다.
+  큰 UI와 raw 높이22/폭1~32 작은 글자의 GPU 저장 pool만 분리했다.
+
+실제 구조 진단 확인
+                    OFF    이전 global ON    수정 small-text ON
+  HUD font draw     2      53                2
+  GUI draw/mesh     7      58                7
+  native GUI bind   5      56                5
+  sorted page switch1      52                1
+  세 실행의 glyph151 / font index1812 / 전체 GUI index1938은 동일하다.
+  이 진단은 actual driver draw를 포함한다. 글자를 덜 그려 횟수를 줄인 것이 아니다.
+
+글자·픽셀·수명 확인
+  BG-OFF-1 / BG-GLOBAL-ON-1 / BG-SMALL-ON-1의 기존 audit 모두 통과했다.
+  provider metadata, native resource별 pixel, GPU occupied cell pixel+metrics의
+  semantic fingerprint가 세 경우 동일하고 scene 전후에도 동일했다.
+  GPU 검산 범위는 controlled-warmup font/codepoint11,325개,
+  textured10,968개 중 bitmap10,951개와 대표 glyph 화면이다.
+  미사용 atlas 여백·GPU 주소·page 배치는 의미 hash에서 제외한다.
+  native/GPU 정상 종료 live refs/bytes/owners/pages 0 검산을 통과했다.
+  자세한 원자료 경로 및 hash는 verified-evidence.json에 기록했다.
+  전체 screenshot PNG가 세 실행 모두 같다는 주장은 하지 않는다. 현재 BG glyph 화면은
+  OFF/global/small 사이23~29픽셀 차이가 있었고 OFF끼리도15~62픽셀 차이가 관측됐다.
+  small 화면은 기존의 변경 없는 OFF 실행 화면과 RGB까지 동일한 사례가 있다.
+  정확한 raster 변동 원인은 분리하지 못했으며 실제 원본/GPU cell/metrics hash의
+  동일성과 별개로 기록한다. 독립 review 결과를 함께 동봉했다.
+
+실제 FontTexture 용량 관측 (최종 프로세스 RAM 비교가 아님)
+  TextureManager 전체 unique FontTexture를 대상으로 format별 bytes와 driver값을 대조했다.
+  bootstrap/main/small-text/fallback을 모두 포함하며 shared cache합만 쓰지 않았다.
+
+  controlled glyph warmup 후, full glyph audit 전
+                    pages   bytes        MiB
+    OFF             1359    356057088    339.5625
+    이전 global ON  5       1114112      1.0625
+    수정 small ON   6       1376256      1.3125
+
+  보조 글자 화면 표시와 full glyph audit 완료 후
+                    pages   bytes        MiB
+    OFF             1360    356319232    339.8125
+    이전 global ON  6       1376256      1.3125
+    수정 small ON   7       1638400      1.5625
+
+  관측 format별 산술과 driver texture bytes는 모두 같았다.
+  수정본은 OFF보다 FontTexture 용량이 약99.5~99.6% 작았다.
+  기존 global보다 RGBA256x256 한 장(262144B=256KiB)을 더 써서 draw53회를2회로 회복했다.
+  이 값은 특정 BG 단계의 GPU texture 저장 용량이며 로딩 peak, heap, RSS,
+  프로세스 footprint 또는 모바일 메모리 절감률로 전용하지 않는다.
+
+생략한 최종 비교
+  추가 최종 FPS·로딩 RAM 비교는 사용자 지시로 생략했다.
+  따라서 수정본의 최종 FPS 또는 로딩 RAM 성능 동등성은 검증하지 않았다.
+  BG 구조 진단의 FPS를 최종 성능값으로 합산하지 않는다.
+  이전 global 방식의 FPS·프로세스 메모리 결과도 새 수정본의 최종값으로 쓰지 않는다.
+  focus 상실 또는 low-disk guard로 중단된 추가 trial은 원자료만 보존하며
+  성능 동등성 통과로 간주하지 않는다.
+
+지원 범위
+  공식 Minecraft Java1.21.11 고정 클래스, 데스크톱 Javaagent 시제품이다.
+  Android/Freedreno 실기 및 모바일 런처 포팅은 하지 않았다.
+  전체 Unicode, 외부 모드 로더, reload 취소의 모든 조합을 전수 보장하지 않는다.
+  소스·고정 JAR2개·적용 설명·ASM 고지를 전달하며 게임/폰트/팩/인증 파일은 포함하지 않는다.
+
+사용자가 추가 시험 생략을 지시한 이후에는 게임 실행·빌드·성능 시험을 추가하지 않았다.

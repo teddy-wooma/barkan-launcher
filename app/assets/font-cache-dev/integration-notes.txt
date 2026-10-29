@@ -1,0 +1,107 @@
+클라이언트 개발자용 - small-text GPU 수정본 전달
+
+지원/상태
+  공식 Minecraft Java 1.21.11의 고정 클래스 바이트 대상으로 작성했다.
+  데스크톱에서 실제 BG 배칭 구조·픽셀·metrics·종료 해제를 확인했다.
+  추가 최종 FPS·로딩 RAM 비교는 사용자 지시로 생략했다.
+  최종 FPS·로딩 RAM 성능 동등성은 검증하지 않았다.
+  Android/Freedreno 실기 시험과 모바일 런처 포팅은 완료하지 않았다.
+  기존 global 방식의 FPS/메모리 결과를 이 수정본의 최종 성능 수치로 바꾸어 쓰지 않는다.
+
+전달 JAR 고정 SHA256
+  font-image-cache-agent.jar
+    fe68efc2eaaa8db3a139ee48eea59e779e05d231a444580deab0eac78c021c76
+  font-gpu-cache-agent.jar
+    c294ad8e72405106202588694d3f7a34de023d2a0eda1c1c24df542bbf5dc0b2
+
+JVM 인수 예시 (자격증명 없음, /absolute는 실제 절대경로로 교체)
+  -javaagent:/absolute/font-image-cache-agent.jar=enabled=true,out=/absolute/run/font-cache,verifyPixels=false
+  -javaagent:/absolute/font-gpu-cache-agent.jar=enabled=true,shareBitmapCells=true,poolPolicy=small-text,smallTextRawHeight=22,smallTextMaxRawWidth=32,out=/absolute/run/gpu-cache
+
+  NativeImage agent가 먼저여야 하며 항상 ON이다.
+  이전 GPU agent 줄을 새 JAR 줄로 교체한다. 두 GPU 버전을 동시에 로드하지 않는다.
+  production premain 옵션 누락 기본값도 small-text/22/32다.
+  OFF 비교는 같은 새 JAR/selector에서 GPU enabled만 false로 바꾼다.
+  이전 global 후보의 구조 진단은 poolPolicy=global을 명시한다.
+
+보존되는 값
+  리소스팩/PNG/원본 RGBA/해상도/폰트 ID/provider 순서/chars를 수정하지 않는다.
+  advance/height/ascent/oversample/bearings와 화면상 geometry는 현재 glyph 값을 유지한다.
+  일반 glyph는 현재 info와 e/f/g/h bearings로 별도 BakedSheetGlyph를 생성한다.
+  저장 셀/UV/textureView/renderTypes만 공유한다. 전체 일반 glyph 객체를 공유하지 않는다.
+  고정 WHITE/MISSING 두 종류만 원래처럼 전체 객체를 공유할 수 있다.
+
+변경한 pool 정책
+  raw source cell 높이22, 폭1~32인 bitmap만 작은 글자 전용 shared GlyphStitcher에 넣는다.
+  표시용 provider height/ascent를 selector로 쓰지 않으며 이 값을 바꾸지도 않는다.
+  다른 높이/큰 UI 그림/고정 특수 glyph는 main pool에 둔다.
+  FontSet 이름에 대한 예외나 glyph 복제/해상도 축소는 없다.
+  원본 allocator가 필요한 page를 늘리며 한 page에 넣으려고 픽셀을 버리지 않는다.
+  글자 저장 위치/texture ID는 달라질 수 있으나 같은 픽셀과 원래 geometry를 사용한다.
+
+동일성 키와 fallback
+  NativeImage identity + 원본 source x/y/width/height + format identity + colored를 키로 쓴다.
+  정확한 공식 BitmapProvider.Glyph$1 uploader만 대상으로 한다.
+  source glyph는 uploader의 enclosing field에서 읽는다. stitch의 info를 bitmap glyph로 cast하지 않는다.
+  TTF 및 알 수 없는 uploader는 원래 source GlyphStitcher로 fallback한다.
+
+수명
+  FontManager apply 세대마다 독립 owner가 main/text group을 가진다.
+  영구 missingFontSet은 별도 bootstrap 세대다.
+  source stitcher 하나가 세대 lease 하나를 얻고 clear에서 반환한다.
+  마지막 lease에서 모든 group을 닫고 NativeImage 셀 key 참조를 제거한다.
+  clear 뒤 같은 source는 다시 lease를 얻을 수 있다. close는 중복 반환을 막고 live binding을 제거한다.
+  생성 실패는 미발행 owner를 rollback한다. apply 일부 발행 실패에서는 발행된 FontSet을 먼저 해제하지 않는다.
+  한 group close가 실패해도 다른 group과 원래 fallback 정리를 계속 시도하고 예외를 보존한다.
+  모든 GPU 생성/업로드/삭제는 render thread에서 수행한다.
+
+통계
+  benchmark.fontgpu.FontGpuCache.snapshotJson() -> JSON 문자열
+  benchmark.fontgpu.FontGpuCache.mark(String) -> checkpoint 기록
+  기존 live totals/counters/API를 유지하며 poolPolicy/selector와 generations[].poolGroups를 추가했다.
+  poolGroups에는 group/allocation/textureBase/sharedPages/sharedTextureBytes가 있다.
+  closedPools에 group별 명시적 0 해제 증거를 남기며 poolCloseFailures/errors도 확인한다.
+  FontTexture 저장량은 TextureManager 전체 unique GPU object 기준으로 계산한다.
+  source FontSet 페이지 목록만 합산하면 공유 main/text/bootstrap이 빠진다.
+
+완료한 실제 구조 진단 (최종 FPS/메모리 수치 아님)
+  BG-OFF-1 / BG-GLOBAL-ON-1 / BG-SMALL-ON-1 순서로 각각 관측했다.
+  HUD font draw/frame: 2 -> 53 -> 2
+  GUI draw 및 mesh/frame: 7 -> 58 -> 7
+  GUI native texture bind/frame: 5 -> 56 -> 5
+  정렬 뒤 glyph page switch/frame: 1 -> 52 -> 1
+  glyph151 / font index1812 / 전체 GUI index1938은 세 경우 동일했다.
+  따라서 작은 글자 전용 pool이 global에서 늘어난 실제 mesh/draw를 원래 수준으로 회복했다.
+  해당 BG는 diagnostic_only_not_final_FPS이며 최종 성능 비교에 섞지 않는다.
+  shared-only RGBA는 BG global5장 -> small6장으로 한 장 늘었다.
+  bootstrap/main/text만의 값이고 fallback 포함 전체 TextureManager 최종 저장량은 아니다.
+  상세 근거: results/STRUCTURAL-PROFILE.txt.
+  TM 전체 unique FontTexture는 full audit전 OFF339.5625MiB -> small1.3125MiB,
+  audit후 OFF339.8125MiB -> small1.5625MiB였다. shared뿐 아니라 bootstrap/fallback도 포함한다.
+  저장 형식별 bytes와 driver texture bytes를 대조한 값이고 프로세스 RAM 결과가 아니다.
+  screenshot PNG 전체가 모두 exact라는 주장은 하지 않는다. occupied cell pixel/metrics
+  semantic 동일성과 대표 화면의 작은 raster 변동은 results에서 따로 명시했다.
+
+검증 범위와 생략한 항목
+  BG3의 provider metadata, 원본 native resource pixel, 실제 occupied GPU cell pixel+metrics
+  semantic hash는 동일했고 사전·사후 검산과 정상 종료 shared/native 0을 확인했다.
+  GPU 픽셀 검산은 controlled-warmup의11,325개 font/codepoint와 대표 glyph 화면 범위다.
+  전체 Unicode·외부 모드·Android 런처를 전수 검증했다는 뜻이 아니다.
+  이전의 headless 수명/예외/metrics 검산은 동봉 source와 결과 근거로 보존했다.
+  새 수정본의 최종 strict OFF/ON FPS 및 로딩 프로세스 RAM 비교는 사용자 지시로 생략했다.
+  새 수정본의 완전한 cold+2reload 성능 동등성을 최종 통과로 표시하지 않는다.
+  BG 회복은 실제 draw 수 회복이고 최종 FPS 향상률을 뜻하지 않는다.
+  results/RESULTS.txt 및 verified-evidence.json 참조.
+
+포팅할 때 유지할 경계
+  공식 클래스 SHA와 descriptor가 다른 런처/모드 환경은 새 매핑과 변환 위치 검산이 필요하다.
+  이 Javaagent를 Android에서 그대로 쓰면 된다는 보장은 없다.
+  Android 런처의 클래스 로더·render thread·GL backend·리로드 취소 경로에 맞춘 포팅과
+  실제 기기 검증을 해야 한다. 파일을 리소스팩에 넣는 것만으로 적용되는 기능은 아니다.
+
+라이선스/배포 자료
+  각 JAR은 ASM 9.10.1의 원본 bytecode 38개를 포함하며 upstream과 동일하다.
+  ASM은 upstream manifest에서 BSD-3-Clause로 고지한다. 전체 원문과 고지를 동봉했다.
+  Minecraft/JDK/LWJGL/이미지/폰트/월드/계정 파일은 이 전달 틀에 포함하지 않았다.
+  자체 source에 이 작업이 새로운 공개 라이선스를 부여하지는 않는다.
+  라이선스 문서 및 고지 파일을 binary와 함께 유지한다.

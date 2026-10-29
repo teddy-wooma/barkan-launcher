@@ -17,3 +17,6 @@
 /.idea/
 Thumbs.db
 desktop.ini
+
+# Isolated dev launcher settings, accounts and game data
+/.font-cache-dev/

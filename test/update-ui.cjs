@@ -5,8 +5,13 @@ const path = require('node:path')
 const vm = require('node:vm')
 const { EventEmitter } = require('node:events')
 
-const source = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
-const section = (text, start, end) => text.slice(text.indexOf(start), text.indexOf(end, text.indexOf(start)))
+const source = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8').replace(/\r\n/g, '\n')
+const section = (text, start, end) => {
+    const from = text.indexOf(start)
+    const to = text.indexOf(end, from)
+    assert.ok(from >= 0 && to > from, `Missing executable section: ${start}`)
+    return text.slice(from, to)
+}
 
 function ui(platform = 'darwin') {
     const ipcRenderer = new EventEmitter()
@@ -125,7 +130,7 @@ test('IPC dispatch routes all macOS actions to the custom updater and keeps Wind
         let handler
         const calls = []
         const context = vm.createContext({
-            ipcMain: { on: (_channel, fn) => { handler = fn } }, process: { platform },
+            ipcMain: { on: (_channel, fn) => { handler = fn } }, process: { platform, env: {} },
             macUpdater: { check: sender => calls.push(['mac-check', sender]), install: sender => calls.push(['mac-install', sender]) },
             autoUpdater: { checkForUpdates: async () => { calls.push(['win-check']) }, quitAndInstall: () => calls.push(['win-install']) }
         })
