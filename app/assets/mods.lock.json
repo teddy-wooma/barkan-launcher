@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "minecraft": "1.21.11",
+  "loader": "fabric",
+  "source": "https://raw.githubusercontent.com/teddy-wooma/FISH_MOD_LIST/a323e1bde01d5f19a20da48535a50caed65ae439/mods.json",
+  "generatedAt": "2026-11-04T19:29:18.575Z",
+  "mods": [
+    {
+      "name": "Cloth Config API",
+      "url": "https://modrinth.com/mod/cloth-config",
+      "required": true,
+      "slug": "cloth-config",
+      "version": "21.11.153+fabric (xuX40TN5)",
+      "fileName": "cloth-config-21.11.153-fabric.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar",
+      "size": 1148427,
+      "sha512": "8f455489d4b71069e998568cf4e1450116f4360a4eb481cd89117f629c6883164886cf63ca08ac4fc929dd13d1112152755a6216d4a1498ee6406ef102093e51"
+    },
+    {
+      "name": "YetAnotherConfigLib",
+      "url": "https://modrinth.com/mod/yacl",
+      "required": true,
+      "slug": "yacl",
+      "version": "3.8.2+1.21.11-fabric (pHWDw3Vc)",
+      "fileName": "yet_another_config_lib_v3-3.8.2+1.21.11-fabric.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/1eAoo2KR/versions/pHWDw3Vc/yet_another_config_lib_v3-3.8.2%2B1.21.11-fabric.jar",
+      "size": 1126948,
+      "sha512": "392db7d471030cca27483ecf58c626a14cd73d71a18afe6d4173c6b030948b8a925b36e708d4cc2c897dfa3f20a7f23b999fc18aa6d36c156da29037601153ac"
+    },
+    {
+      "name": "Bobby",
+      "url": "https://modrinth.com/mod/bobby",
+      "required": true,
+      "slug": "bobby",
+      "version": "5.2.11.1+mc1.21.11 (ZwOXWoVI)",
+      "fileName": "bobby-5.2.11.1+mc1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/M08ruV16/versions/ZwOXWoVI/bobby-5.2.11.1%2Bmc1.21.11.jar",
+      "size": 872033,
+      "sha512": "4a691e6601936baf0e1e6fdc7b041caba315e66c75b08424c500a1903cb225d822a633ac565337f2f14bccfee851eb0c5ad672a2277c205ea00ca187ae762835"
+    },
+    {
+      "name": "Clear Water",
+      "url": "https://modrinth.com/mod/clear-waterlavapowdersnow",
+      "required": true,
+      "slug": "clear-waterlavapowdersnow",
+      "version": "1.21.11_Fabric (6WjDpmpO)",
+      "fileName": "ClearWaterLava-Fabric-1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/UFRJve4V/versions/6WjDpmpO/ClearWaterLava-Fabric-1.21.11.jar",
+      "size": 5685,
+      "sha512": "89aa5679026c00df4acf6dcbece51b7f9ddc209f9ec7f43f4860b8fcedac052396b233acbff75ccdc9f6f18470a3250bda159bdec315ffcc45c4cb07c35131ea"
+    },
+    {
+      "name": "flashback",
+      "url": "https://modrinth.com/mod/flashback",
+      "required": true,
+      "slug": "flashback",
+      "version": "0.39.10 (JTAZ57qO)",
+      "fileName": "Flashback-0.39.10-for-MC1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/4das1Fjq/versions/JTAZ57qO/Flashback-0.39.10-for-MC1.21.11.jar",
+      "size": 210513938,
+      "sha512": "eb2cb1ad543df6102c5c26a1272887ed0cbbb15332adeb5f4e32b3221e4570ad227cf1b390d9f11a4924e41a8b9f7dc2ae4f5bc8de1a7068a005d7ed449b9f66"
+    },
+    {
+      "name": "packforge",
+      "url": "https://modrinth.com/mod/packforge",
+      "required": true,
+      "slug": "packforge",
+      "version": "1.4.1-beta.1 (FAorrvqL)",
+      "fileName": "packforge-fabric-1.4.1-beta.1-mc1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/NimDX7iQ/versions/FAorrvqL/packforge-fabric-1.4.1-beta.1-mc1.21.11.jar",
+      "size": 401319,
+      "sha512": "a26c1adb76a0d5146958aaefa6386559c39df80a66cdfb81cabc76eb2faf5bfa914bd847ed66a1e9decdd2bd9613a7758dcd9ed8d48d74331621462eb793fd1e"
+    },
+    {
+      "name": "barkanpiano",
+      "url": "https://github.com/teddy-wooma/FISH_MOD_LIST/blob/main/BarkanPianoClient-1.10.0.jar",
+      "required": true,
+      "slug": "BarkanPianoClient-1.10.0.jar",
+      "version": "main@a323e1b",
+      "fileName": "BarkanPianoClient-1.10.0.jar",
+      "downloadUrl": "https://raw.githubusercontent.com/teddy-wooma/FISH_MOD_LIST/a323e1bde01d5f19a20da48535a50caed65ae439/BarkanPianoClient-1.10.0.jar",
+      "size": 16862,
+      "sha512": "5a66145fa361f80a1572205cd7c12e608a331a62819c842458ff625eb8a5735da07fc442c49673d8adc820a96bd8b5dd2fb30b228dbe2c3d5ce26cb116ff5524"
+    },
+    {
+      "name": "barkanrsps",
+      "url": "https://github.com/teddy-wooma/FISH_MOD_LIST/blob/main/barkanrsps.jar",
+      "required": true,
+      "slug": "barkanrsps.jar",
+      "version": "main@a323e1b",
+      "fileName": "barkanrsps.jar",
+      "downloadUrl": "https://raw.githubusercontent.com/teddy-wooma/FISH_MOD_LIST/a323e1bde01d5f19a20da48535a50caed65ae439/barkanrsps.jar",
+      "size": 13870,
+      "sha512": "6239dd82d83b2b3e826fd252c440b01e57d6ebcc688908e4b7d317b2eaad4b4930a59b7f9017ab76001876c24f2f3787aba025b5e28f6442a23a00e10a2f718b"
+    },
+    {
+      "name": "Fabric API",
+      "url": "https://modrinth.com/mod/fabric-api",
+      "required": true,
+      "slug": "fabric-api",
+      "version": "0.141.6+1.21.11 (6qAuTtLR)",
+      "fileName": "fabric-api-0.141.6+1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/P7dR8mSH/versions/6qAuTtLR/fabric-api-0.141.6%2B1.21.11.jar",
+      "size": 2426039,
+      "sha512": "852d3682c4f353fd0ca86546af8578513e8bcf628377fa9d49c556bc59c5024c69ab56c92fc6dfba11fed19e4316a3f5636e7e07fd3d96f7043b531aef59b637"
+    },
+    {
+      "name": "Entity Texture Features",
+      "url": "https://modrinth.com/mod/entitytexturefeatures",
+      "required": false,
+      "slug": "entitytexturefeatures",
+      "version": "7.2.7-fabric-1.21.11 (itjOkghQ)",
+      "fileName": "entity_texture_features-7.2.7-1.21.11-fabric.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/BVzZfTc1/versions/itjOkghQ/entity_texture_features-7.2.7-1.21.11-fabric.jar",
+      "size": 808818,
+      "sha512": "2239aa6941bb6eac9f89aa601210243bc72c260ea8517a5e5b39ac65a49f827bfa83f9a90838b5c8c04b833a239c9ed7a228ca32b632529aa398aa607aea63c8"
+    },
+    {
+      "name": "Entity Model Features",
+      "url": "https://modrinth.com/mod/entity-model-features",
+      "required": false,
+      "slug": "entity-model-features",
+      "version": "3.3.12-fabric-1.21.11 (x4GbWVyx)",
+      "fileName": "entity_model_features-3.3.12-1.21.11-fabric.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/4I1XuqiY/versions/x4GbWVyx/entity_model_features-3.3.12-1.21.11-fabric.jar",
+      "size": 669397,
+      "sha512": "94832c77539e0ffa0c1a85fe99dd6e31506e2f1155601d0eb96f67796b856e84e1fed3aa0b68fd2f9ea1eb70b03668124ae77e4a754cab73d02c993f3e6c1504"
+    },
+    {
+      "name": "Mod Menu",
+      "url": "https://modrinth.com/mod/modmenu",
+      "required": false,
+      "slug": "modmenu",
+      "version": "17.0.1 (cLkYaVuL)",
+      "fileName": "modmenu-17.0.1.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/mOgUt4GM/versions/cLkYaVuL/modmenu-17.0.1.jar",
+      "size": 960882,
+      "sha512": "cb68cc39c8da66d05a1d2054a0e7b62144881e0cdb5fd681bc4f337b1313fafac394246f4e0aa0c4b6343db9e9750250a00c1bb72689b762da685ce1ccfee51f"
+    },
+    {
+      "name": "FerriteCore",
+      "url": "https://modrinth.com/mod/ferrite-core",
+      "required": false,
+      "slug": "ferrite-core",
+      "version": "8.2.0-fabric (Ii0gP3D8)",
+      "fileName": "ferritecore-8.2.0-fabric.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/uXXizFIs/versions/Ii0gP3D8/ferritecore-8.2.0-fabric.jar",
+      "size": 80138,
+      "sha512": "3210926a82eb32efd9bcebabe2f6c053daf5c4337eebc6d5bacba96d283510afbde646e7e195751de795ec70a2ea44fef77cb54bf22c8e57bb832d6217418869"
+    },
+    {
+      "name": "Entity Culling",
+      "url": "https://modrinth.com/mod/entityculling",
+      "required": false,
+      "slug": "entityculling",
+      "version": "1.11.3 (CTabrwB1)",
+      "fileName": "entityculling-fabric-1.11.3-mc1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/NNAgCjsB/versions/CTabrwB1/entityculling-fabric-1.11.3-mc1.21.11.jar",
+      "size": 1529094,
+      "sha512": "4b5516bf8718d74db0e0368ad2fd2f5ce3e986c3abbf65426418ce3ec162651d29579b9be8aa0d34b88f47e310f6b7bab56bde7ff1223c35998bff0bcbed58c5"
+    },
+    {
+      "name": "Korean Chat Patch",
+      "url": "https://modrinth.com/mod/korean-chat-patch",
+      "required": false,
+      "slug": "korean-chat-patch",
+      "version": "mc1.21.11-1.9.6-fabric (XVQhHGk3)",
+      "fileName": "koreanpatch-fabric-1.9.6+mc1.21.11.jar",
+      "downloadUrl": "https://cdn.modrinth.com/data/qyulnpBL/versions/XVQhHGk3/koreanpatch-fabric-1.9.6%2Bmc1.21.11.jar",
+      "size": 716367,
+      "sha512": "a54c6ef6157d48b7a16977d97fc65b4824cc2c3d2b8642050dc5e294d95db31e8e8a0532a544b5106a01370decb725de6c2a0411c6de08c80899693b2381a9da"
+    }
+  ]
+}

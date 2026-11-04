@@ -277,8 +277,15 @@ const refreshServerStatus = async (fade = false) => {
 
         const servStat = await getServerStatus(47, serv.hostname, serv.port)
         console.log(servStat)
+        // 서버 목록 응답은 암호화되지 않은 평문이고 서버(또는 중간자)가 아무 문자열이나 넣을 수 있습니다.
+        // 숫자만 받아들이고, 화면에는 textContent 로만 씁니다.
+        const online = Number(servStat?.players?.online)
+        const max = Number(servStat?.players?.max)
+        if(!Number.isSafeInteger(online) || !Number.isSafeInteger(max) || online < 0 || max < 0){
+            throw new Error('서버 상태 응답의 접속자 수가 숫자가 아닙니다.')
+        }
         pLabel = Lang.queryJS('landing.serverStatus.players')
-        pVal = servStat.players.online + '/' + servStat.players.max
+        pVal = `${online}/${max}`
 
     } catch (err) {
         loggerLanding.warn('Unable to refresh server status, assuming offline.')
@@ -286,13 +293,13 @@ const refreshServerStatus = async (fade = false) => {
     }
     if(fade){
         $('#server_status_wrapper').fadeOut(250, () => {
-            document.getElementById('landingPlayerLabel').innerHTML = pLabel
-            document.getElementById('player_count').innerHTML = pVal
+            document.getElementById('landingPlayerLabel').textContent = pLabel
+            document.getElementById('player_count').textContent = pVal
             $('#server_status_wrapper').fadeIn(500)
         })
     } else {
-        document.getElementById('landingPlayerLabel').innerHTML = pLabel
-        document.getElementById('player_count').innerHTML = pVal
+        document.getElementById('landingPlayerLabel').textContent = pLabel
+        document.getElementById('player_count').textContent = pVal
     }
 
 }
@@ -1325,7 +1332,10 @@ async function syncGameFile(directory, subdirectory, file){
         url: file.url,
         directory,
         subdirectory,
-        fileName: file.fileName
+        fileName: file.fileName,
+        // 배포 인덱스에 해시가 있으면 메인 프로세스가 그 해시로 검증합니다. (mods 폴더는 필수)
+        sha512: file.sha512,
+        size: file.size
     })
 }
 

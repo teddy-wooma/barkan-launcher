@@ -18,6 +18,8 @@
     "dist:linux": "npm run dist -- -l",
     "lint": "eslint .",
     "test:updates": "node --test test/mac-updater.cjs test/update-ui.cjs",
+    "test:security": "node --test test/modlock.cjs test/externallink.cjs test/security-regressions.cjs",
+    "lock:mods": "node tools/lock-mods.cjs",
     "check": "electron tools/check-electron.cjs",
     "distro:build": "node tools/build-distribution.cjs",
     "distro:verify": "node tools/verify-distribution.cjs",
