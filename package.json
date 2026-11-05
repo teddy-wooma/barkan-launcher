@@ -1,6 +1,6 @@
 {
   "name": "barkan-launcher",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "productName": "Barkan Launcher",
   "description": "바르칸 열도 전용 마인크래프트 런처",
   "author": "Barkan",
@@ -18,6 +18,8 @@
     "dist:linux": "npm run dist -- -l",
     "lint": "eslint .",
     "test:updates": "node --test test/mac-updater.cjs test/update-ui.cjs",
+    "test:security": "node --test test/modlock.cjs test/externallink.cjs test/security-regressions.cjs",
+    "lock:mods": "node tools/lock-mods.cjs",
     "check": "electron tools/check-electron.cjs",
     "distro:build": "node tools/build-distribution.cjs",
     "distro:verify": "node tools/verify-distribution.cjs",

@@ -16,24 +16,32 @@
         {
             "name": "Sodium",
             "url": "https://cdn.modrinth.com/data/AANobbMI/versions/rkdTcxoT/sodium-fabric-0.8.14%2Bmc1.21.11.jar",
-            "fileName": "sodium-fabric-0.8.14+mc1.21.11.jar"
+            "fileName": "sodium-fabric-0.8.14+mc1.21.11.jar",
+            "size": 1909150,
+            "sha512": "04c43f9e8534b87a52c42ffd51b0e344d4ef92dc9cc52da33d13af6a18bf74b05380d2027f1e0db982698d0aff274c42741c1e21b313b0cd75ed3af005fc98d9"
         },
         {
             "name": "Iris",
             "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/ka9PDlsN/iris-fabric-1.10.8%2Bmc1.21.11.jar",
-            "fileName": "iris-fabric-1.10.8+mc1.21.11.jar"
+            "fileName": "iris-fabric-1.10.8+mc1.21.11.jar",
+            "size": 2807718,
+            "sha512": "f0cad4b6af593b6fc25738c4ef5a2b346125f9693d25a0d486858e54798d2ea87b24d1497e1bb4391729d7d9e490f42771f7fb468d4e1420e372d8643f9e2055"
         }
     ],
     "shaders": {
         "low": {
             "name": "Complementary Unbound r5.9.3",
             "url": "https://cdn.modrinth.com/data/R6NEzAwj/versions/B1kyfoUZ/ComplementaryUnbound_r5.9.3.zip",
-            "fileName": "barkan-shaders-low.zip"
+            "fileName": "barkan-shaders-low.zip",
+            "size": 553400,
+            "sha512": "a085d1d8cda67cd17a2b414eeba48bbd809da069f269bab46246235ec8fe714a275013c70d0504527b0987d810deddddba4564332414ab3b3bd7435932ff808c"
         },
         "high": {
             "name": "Sildur's Vibrant Shaders 2.02 Extreme",
             "url": "https://cdn.modrinth.com/data/z8EjLYqN/versions/J4RlzpKF/Sildur%27s%20Vibrant%20Shaders%20v2.02%20Extreme.zip",
-            "fileName": "barkan-shaders-high.zip"
+            "fileName": "barkan-shaders-high.zip",
+            "size": 251371,
+            "sha512": "da6d9cfdfaedfe96741f7b61d69a650d4b2f7a02f744b9e0935873135b9b9fff74ea73c44c74c22c828e7a42783e25db767d5ef867d47f4d907e5aedb1294971"
         }
     },
     "servers": [
