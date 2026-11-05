@@ -16,6 +16,8 @@ const { AZURE_CLIENT_ID, MSFT_OPCODE, MSFT_REPLY_TYPE, MSFT_ERROR, SHELL_OPCODE 
 const crypto                            = require('crypto')
 const LangLoader                        = require('./app/assets/js/langloader')
 const NbtUtil                           = require('./app/assets/js/nbtutil')
+const ModLock                           = require('./app/assets/js/modlock')
+const ExternalLink                      = require('./app/assets/js/externallink')
 const { createMacUpdater }              = require('./app/assets/js/macupdater')
 const macUpdater                        = createMacUpdater({ app, shell })
 
@@ -143,34 +145,80 @@ ipcMain.handle(SHELL_OPCODE.TRASH_ITEM, async (event, ...args) => {
     }
 })
 
-// Windows 에서는 shell.openExternal 이 아무것도 열지 않고 성공하는 경우가 있어 cmd /c start 를 먼저 시도합니다.
+// Windows 에서는 shell.openExternal 이 아무것도 열지 않고 성공하는 경우가 있어 rundll32 로 먼저 엽니다.
+// cmd /c start 는 주소 속 `&` 뒤를 별도 명령으로 실행하므로 쓰지 않습니다. (externallink.js 참고)
 function openExternalUrl(url) {
-    if(process.platform === 'win32'){
-        try {
-            const child = spawn('cmd', ['/c', 'start', '', url], {
-                detached: true,
-                stdio: 'ignore',
-                windowsHide: true
-            })
-            child.unref()
-            return
-        } catch (err) {
-            console.error('[Links] cmd start 실패, shell.openExternal 로 재시도합니다.', err)
-        }
-    }
-    shell.openExternal(url).catch(err => {
-        console.error('[Links] 브라우저를 열지 못했습니다:', url, err)
-    })
-}
-
-ipcMain.handle('openExternal', (event, url) => {
-    if(typeof url !== 'string' || !/^https?:\/\//i.test(url)){
+    const href = ExternalLink.normalizeExternalUrl(url)
+    if(href == null){
         console.error('[Links] 허용되지 않은 URL 입니다:', url)
         return false
     }
-    openExternalUrl(url)
+
+    const fallback = err => {
+        console.error('[Links] rundll32 로 열지 못해 shell.openExternal 로 재시도합니다.', err)
+        shell.openExternal(href).catch(error => {
+            console.error('[Links] 브라우저를 열지 못했습니다:', href, error)
+        })
+    }
+
+    if(process.platform === 'win32'){
+        try {
+            const { command, args } = ExternalLink.windowsOpenCommand(href)
+            const child = spawn(command, args, {
+                detached: true,
+                stdio: 'ignore',
+                windowsHide: true,
+                shell: false
+            })
+            child.once('error', fallback)
+            child.unref()
+            return true
+        } catch (err) {
+            fallback(err)
+            return true
+        }
+    }
+    shell.openExternal(href).catch(err => {
+        console.error('[Links] 브라우저를 열지 못했습니다:', href, err)
+    })
     return true
+}
+
+ipcMain.handle('openExternal', (event, url) => {
+    return openExternalUrl(url)
 })
+
+// 메인 창은 Node 권한(nodeIntegration)을 가지므로, 런처 화면(app 폴더의 file://) 밖으로 이동하면 안 됩니다.
+// HTML 이 한 줄만 끼어들어도 <meta http-equiv="refresh"> 로 외부 페이지를 이 창에 열 수 있고,
+// 그 페이지는 CSP 없이 Node 권한으로 실행됩니다. 이동·리다이렉트·새 창·webview 를 모두 막습니다.
+const LAUNCHER_PAGE_PREFIX = pathToFileURL(path.join(__dirname, 'app') + path.sep).href
+
+function isLauncherPage(url) {
+    try {
+        const parsed = new URL(url)
+        return parsed.protocol === 'file:' && parsed.href.startsWith(LAUNCHER_PAGE_PREFIX)
+    } catch (_err) {
+        return false
+    }
+}
+
+function lockMainWindowNavigation(contents) {
+    const block = (event, url) => {
+        if(!isLauncherPage(url)){
+            event.preventDefault()
+            console.warn('[Security] 런처 창이 외부 주소로 이동하려는 것을 막았습니다:', url)
+        }
+    }
+    contents.on('will-navigate', block)
+    contents.on('will-redirect', block)
+    contents.on('will-attach-webview', event => event.preventDefault())
+    contents.setWindowOpenHandler(({ url }) => {
+        if(ExternalLink.normalizeExternalUrl(url) != null){
+            openExternalUrl(url)
+        }
+        return { action: 'deny' }
+    })
+}
 
 // 렌더러는 file:// 로 돌고 커뮤니티 사이트는 CORS 헤더를 보내지 않아, 메인 프로세스에서 대신 받아옵니다.
 async function fetchNewsPage(url) {
@@ -418,6 +466,48 @@ ipcMain.handle('syncServerResourcePack', async (event, options) => {
     }
 })
 
+// 배포 인덱스에 SHA-512 가 적힌 파일(셰이더 모드·셰이더팩)은 해시가 맞을 때만 씁니다.
+async function syncVerifiedGameFile(event, { url, target, statePath, safeName, safeFolder, sha512, size }) {
+    await fs.promises.mkdir(path.dirname(target), { recursive: true })
+    const current = await ModLock.sha512OfFile(target)
+    const version = `sha512:${sha512.slice(0, 12)}`
+    if(current === sha512){
+        return { status: 'skipped', size: await fileSizeIfExists(target), version }
+    }
+
+    try {
+        const result = await ModLock.downloadVerified({
+            url,
+            destination: target,
+            sha512,
+            size: Number.isSafeInteger(size) ? size : undefined,
+            userAgent: launcherUserAgent(),
+            onProgress: (received, total) => {
+                if(!event.sender.isDestroyed()){
+                    event.sender.send('resourcePackProgress', { received, total })
+                }
+            }
+        })
+        await fs.promises.writeFile(statePath, JSON.stringify({
+            url,
+            fileName: safeName,
+            version,
+            size: result.size,
+            sha512,
+            updatedAt: new Date().toISOString()
+        }, null, 2), 'utf8')
+        console.log(`[GameFile] 검증 후 설치했습니다: ${safeFolder}/${safeName}`)
+        return { status: 'installed', size: result.size, version }
+    } catch (err) {
+        // 해시가 다른 jar 가 mods 폴더에 남아 실행되지 않게 지웁니다.
+        if(safeFolder === 'mods' && current != null){
+            await fs.promises.rm(target, { force: true }).catch(() => {})
+        }
+        console.warn(`[GameFile] 검증 설치 실패: ${safeFolder}/${safeName}`, err.message)
+        return { status: 'failed', reason: err.message }
+    }
+}
+
 ipcMain.handle('syncResourcePack', async (event, options) => {
     launchLogSection('리소스팩 동기화')
     launchLog('RSPACK', '요청 : ' + JSON.stringify(options))
@@ -435,6 +525,15 @@ ipcMain.handle('syncResourcePack', async (event, options) => {
     const packDir = path.join(directory, safeFolder)
     const target = path.join(packDir, safeName)
     const statePath = path.join(packDir, `${RESOURCE_PACK_STATE_FILE_PREFIX}${safeName}.json`)
+
+    const expectedSha512 = typeof (options || {}).sha512 === 'string' ? options.sha512.toLowerCase() : null
+    if(ModLock.isSha512(expectedSha512)){
+        return await syncVerifiedGameFile(event, { url, target, statePath, safeName, safeFolder, sha512: expectedSha512, size: options.size })
+    }
+    // mods 폴더에 들어가는 파일은 코드라서, 해시 없이 받아 넣지 않습니다.
+    if(safeFolder === 'mods'){
+        return { status: 'failed', reason: `${safeName}: mods 폴더에 넣는 파일은 배포 인덱스에 SHA-512 가 있어야 합니다.` }
+    }
 
     try {
         await fs.promises.mkdir(packDir, { recursive: true })
@@ -513,13 +612,21 @@ ipcMain.handle('syncResourcePack', async (event, options) => {
 app.disableHardwareAcceleration()
 
 
-const MOD_LIST_URL = 'https://raw.githubusercontent.com/teddy-wooma/FISH_MOD_LIST/refs/heads/main/mods.json'
-const MODRINTH_API = 'https://api.modrinth.com/v2'
-const MOD_LOADER = 'fabric'
-const MOD_GAME_VERSION = '1.21.11'
-const MOD_STATE_FILE_PREFIX = '.barkan-mod-'
-// 모드를 끄면 파일을 지우지 않고 이 폴더로 옮깁니다. (지웠다 다시 받으면 그 모드가 쓰던 설정이 사라집니다)
-const MOD_DISABLED_DIR = 'mods-disabled'
+// 모드 목록·버전·SHA-512 는 런처 안의 잠금 파일에 고정합니다. (원격 목록을 받아 검증 없이 설치하지 않습니다)
+// 목록을 바꾸려면 tools/lock-mods.cjs 로 app/assets/mods.lock.json 을 다시 만들고 런처를 새로 배포합니다.
+const MOD_LOCK_PATH = path.join(__dirname, 'app', 'assets', 'mods.lock.json')
+let modLockCache = null
+
+function getModLock() {
+    if(modLockCache == null){
+        modLockCache = ModLock.loadLockSync(MOD_LOCK_PATH)
+    }
+    return modLockCache
+}
+
+function launcherUserAgent() {
+    return `BarkanLauncher/${app.getVersion()}`
+}
 
 async function fetchJson(url, timeoutMs = 15000) {
     const response = await fetch(url, {
@@ -534,44 +641,6 @@ async function fetchJson(url, timeoutMs = 15000) {
         throw new Error(`HTTP ${response.status}`)
     }
     return JSON.parse(await response.text())
-}
-
-function modrinthSlug(url) {
-    const match = /modrinth\.com\/mod\/([^/?#]+)/i.exec(String(url || ''))
-    return match ? match[1] : null
-}
-
-async function resolveModrinthVersion(slug) {
-    const base = `loaders=${encodeURIComponent(JSON.stringify([MOD_LOADER]))}`
-        + `&game_versions=${encodeURIComponent(JSON.stringify([MOD_GAME_VERSION]))}`
-
-    // 릴리즈를 먼저 찾고, 없으면 베타를 씁니다.
-    // 나중에 릴리즈가 나오면 버전 번호가 달라지므로 자동으로 갈아탑니다.
-    for(const channel of ['release', 'beta']){
-        const list = await fetchJson(
-            `${MODRINTH_API}/project/${encodeURIComponent(slug)}/version?${base}&version_type=${channel}`
-        )
-        if(!Array.isArray(list) || list.length === 0){
-            continue
-        }
-
-        const version = list[0]
-        const files = Array.isArray(version.files) ? version.files : []
-        const file = files.find(f => f.primary === true) || files[0]
-        if(file == null || !file.url){
-            continue
-        }
-
-        return {
-            version: String(version.version_number || ''),
-            fileName: path.basename(file.filename),
-            url: file.url,
-            size: Number(file.size || 0),
-            channel
-        }
-    }
-
-    return null
 }
 
 async function ensureServerEntry(directory, address, quickPlayAddress) {
@@ -600,340 +669,58 @@ async function ensureServerEntry(directory, address, quickPlayAddress) {
     return true
 }
 
-async function fetchModList() {
-    const parsed = await fetchJson(MOD_LIST_URL)
-    const pick = list => (Array.isArray(list) ? list : [])
-        .filter(m => m != null && typeof m.url === 'string' && m.url.length > 0)
-        .map(m => ({ name: String(m.name || m.url), url: m.url }))
-
-    return { required: pick(parsed.required), optional: pick(parsed.optional) }
-}
-
-function directJarUrl(url) {
-    const text = String(url || '')
-    const blob = /^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/i.exec(text)
-    if(blob != null){
-        return `https://raw.githubusercontent.com/${blob[1]}/${blob[2]}/${blob[3]}`
-    }
-    return /^https?:\/\//i.test(text) ? text : null
-}
-
-function modStateKey(url) {
-    const slug = modrinthSlug(url)
-    if(slug != null){
-        return slug
-    }
-    const direct = directJarUrl(url)
-    if(direct == null){
-        return null
-    }
-    const name = decodeURIComponent(direct.split('/').pop() || '')
-    return name.length > 0 ? name.replace(/[^0-9A-Za-z._-]/g, '_') : null
-}
-
-async function resolveModTarget(url) {
-    const slug = modrinthSlug(url)
-    if(slug != null){
-        return await resolveModrinthVersion(slug)
-    }
-
-    const direct = directJarUrl(url)
-    if(direct == null){
-        return null
-    }
-
-    const response = await fetch(direct, {
-        method: 'HEAD',
-        redirect: 'follow',
-        headers: { 'user-agent': `BarkanLauncher/${app.getVersion()}` },
-        signal: AbortSignal.timeout(15000)
-    })
-    if(!response.ok){
-        throw new Error(`HTTP ${response.status}`)
-    }
-
-    const fileName = decodeURIComponent((new URL(response.url).pathname.split('/').pop()) || '')
-    if(fileName.length === 0){
-        throw new Error('파일 이름을 알 수 없습니다.')
-    }
-
-    const etag = response.headers.get('etag') || response.headers.get('last-modified') || ''
-    const size = Number(response.headers.get('content-length') || 0)
-
-    return {
-        version: etag.length > 0 ? etag : `size:${size}`,
-        fileName: path.basename(fileName),
-        url: direct,
-        size
-    }
-}
-
-async function moveFileIfExists(from, to) {
-    if(await fileSizeIfExists(from) == null){
-        return false
-    }
-    await fs.promises.mkdir(path.dirname(to), { recursive: true })
-    await fs.promises.rm(to, { force: true })
-    await fs.promises.rename(from, to)
-    return true
-}
-
-async function writeModState(statePath, data) {
-    await fs.promises.writeFile(statePath, JSON.stringify(data, null, 2), 'utf8')
-}
-
 ipcMain.handle('syncMods', async (event, options) => {
     launchLogSection('모드 동기화')
     launchLog('MODS', '요청 : ' + JSON.stringify(options))
     const { directory, disabledUrls, serverAddress, quickPlayAddress } = options || {}
-    if(typeof directory !== 'string' || directory.length === 0){
-        return { ok: false, reason: '게임 폴더를 알 수 없습니다.', items: [] }
-    }
 
-    const disabled = new Set(Array.isArray(disabledUrls) ? disabledUrls : [])
-
-    let list
+    let lock
     try {
-        list = await fetchModList()
+        lock = getModLock()
     } catch (err) {
-        return {
-            ok: false,
-            items: [],
-            reason: `모드 목록을 받아오지 못했습니다. (${err.message})\n인터넷 연결을 확인해 주세요.`
-        }
+        return { ok: false, items: [], reason: `런처 모드 목록을 읽지 못했습니다. (${err.message})` }
     }
 
-    const modsDir = path.join(directory, 'mods')
-    const disabledDir = path.join(directory, MOD_DISABLED_DIR)
-    await fs.promises.mkdir(modsDir, { recursive: true })
+    const result = await ModLock.syncMods({
+        directory,
+        disabledUrls,
+        lock,
+        userAgent: launcherUserAgent(),
+        log: message => console.log(`[Mods] ${message}`)
+    })
+    result.items.forEach(item => launchLog('MODS', `${item.status} : ${item.name}${item.reason ? ' (' + item.reason + ')' : ''}`))
 
-    const wanted = [
-        ...list.required.map(m => ({ ...m, required: true })),
-        ...list.optional.map(m => ({ ...m, required: false }))
-    ]
-
-    const items = []
-    const failures = []
-
-    for(const mod of wanted){
-        const slug = modStateKey(mod.url)
-        const enabled = !disabled.has(mod.url)
-        const item = { name: mod.name, url: mod.url, slug, required: mod.required, enabled, status: 'failed' }
-
+    if(typeof directory === 'string' && directory.length > 0){
         try {
-            if(slug == null){
-                throw new Error('지원하지 않는 주소입니다. (모드린스 주소 또는 jar 주소)')
-            }
-
-            const info = await resolveModTarget(mod.url)
-            if(info == null){
-                throw new Error(`${MOD_GAME_VERSION} + ${MOD_LOADER} 버전을 찾지 못했습니다.`)
-            }
-            item.latestVersion = info.version
-
-            const statePath = path.join(modsDir, `${MOD_STATE_FILE_PREFIX}${slug}.json`)
-            const state = await readJsonIfExists(statePath)
-            const fileName = state != null && typeof state.fileName === 'string'
-                ? path.basename(state.fileName)
-                : info.fileName
-            item.fileName = fileName
-            item.version = state != null ? (state.version || null) : null
-
-            const inMods = (await fileSizeIfExists(path.join(modsDir, fileName))) != null
-            const inDisabled = (await fileSizeIfExists(path.join(disabledDir, fileName))) != null
-
-            if(!enabled){
-                if(inMods){
-                    await moveFileIfExists(path.join(modsDir, fileName), path.join(disabledDir, fileName))
-                }
-                item.status = 'disabled'
-                items.push(item)
-                continue
-            }
-
-            if(!inMods && !inDisabled){
-                await fs.promises.rm(path.join(modsDir, info.fileName), { force: true })
-                await downloadToFile(info.url, path.join(modsDir, info.fileName))
-                await writeModState(statePath, { slug, name: mod.name, version: info.version, fileName: info.fileName, size: info.size })
-                item.status = 'installed'
-                item.version = info.version
-                item.fileName = info.fileName
-                items.push(item)
-                continue
-            }
-
-            if(inDisabled && !inMods){
-                await moveFileIfExists(path.join(disabledDir, fileName), path.join(modsDir, fileName))
-                item.status = 'installed'
-                items.push(item)
-                continue
-            }
-
-            // 필수 모드는 자동으로 최신 버전에 맞춥니다.
-            // 선택 모드는 그대로 두고, 사용자가 직접 업데이트 버튼을 누릅니다.
-            if(mod.required && item.version != null && info.version != null && item.version !== info.version){
-                const target = path.join(modsDir, info.fileName)
-                if(fileName !== info.fileName){
-                    await fs.promises.rm(path.join(modsDir, fileName), { force: true })
-                }
-                await fs.promises.rm(target, { force: true })
-                await downloadToFile(info.url, target)
-                await writeModState(statePath, {
-                    slug,
-                    name: mod.name,
-                    version: info.version,
-                    fileName: info.fileName,
-                    size: info.size
-                })
-                console.log(`[Mods] 필수 모드를 자동 업데이트했습니다: ${mod.name} (${item.version} -> ${info.version})`)
-                item.status = 'installed'
-                item.version = info.version
-                item.fileName = info.fileName
-                item.autoUpdated = true
-                items.push(item)
-                continue
-            }
-
-            item.status = item.version != null && item.version !== info.version ? 'outdated' : 'installed'
-            items.push(item)
+            await ensureServerEntry(directory, serverAddress, quickPlayAddress)
         } catch (err) {
-            item.reason = err.message
-            failures.push(`${mod.name}: ${err.message}`)
-            items.push(item)
+            console.warn('[Mods] servers.dat 을 쓰지 못했습니다.', err.message)
         }
     }
 
-    try {
-        await ensureServerEntry(directory, serverAddress, quickPlayAddress)
-    } catch (err) {
-        console.warn('[Mods] servers.dat 을 쓰지 못했습니다.', err.message)
-    }
-
-    return {
-        ok: failures.length === 0,
-        items,
-        reason: failures.length > 0 ? failures.join('\n') : null
-    }
+    return result
 })
 
 ipcMain.handle('getModStatus', async (event, options) => {
     const { directory, disabledUrls } = options || {}
-    if(typeof directory !== 'string' || directory.length === 0){
-        return { ok: false, reason: '게임 폴더를 알 수 없습니다.', items: [] }
-    }
-
-    const disabled = new Set(Array.isArray(disabledUrls) ? disabledUrls : [])
-    const modsDir = path.join(directory, 'mods')
-    const disabledDir = path.join(directory, MOD_DISABLED_DIR)
-    await fs.promises.mkdir(modsDir, { recursive: true })
-
-    let list
+    let lock
     try {
-        list = await fetchModList()
+        lock = getModLock()
     } catch (err) {
-        return { ok: false, items: [], reason: `모드 목록을 받아오지 못했습니다. (${err.message})` }
+        return { ok: false, items: [], reason: `런처 모드 목록을 읽지 못했습니다. (${err.message})` }
     }
-
-    const wanted = [
-        ...list.required.map(m => ({ ...m, required: true })),
-        ...list.optional.map(m => ({ ...m, required: false }))
-    ]
-
-    const items = []
-    for(const mod of wanted){
-        const item = {
-            name: mod.name,
-            url: mod.url,
-            slug: modStateKey(mod.url),
-            required: mod.required,
-            enabled: !disabled.has(mod.url),
-            status: 'failed'
-        }
-
-        try {
-            if(item.slug == null){
-                throw new Error('지원하지 않는 주소입니다. (모드린스 주소 또는 jar 주소)')
-            }
-            const info = await resolveModTarget(mod.url)
-            if(info == null){
-                throw new Error(`${MOD_GAME_VERSION} + ${MOD_LOADER} 버전을 찾지 못했습니다.`)
-            }
-            item.latestVersion = info.version
-
-            const state = await readJsonIfExists(path.join(modsDir, `${MOD_STATE_FILE_PREFIX}${item.slug}.json`))
-            const fileName = state != null && typeof state.fileName === 'string'
-                ? path.basename(state.fileName)
-                : info.fileName
-            item.fileName = fileName
-            item.version = state != null ? (state.version || null) : null
-
-            const inMods = (await fileSizeIfExists(path.join(modsDir, fileName))) != null
-            const inDisabled = (await fileSizeIfExists(path.join(disabledDir, fileName))) != null
-
-            if(!inMods && !inDisabled){
-                item.status = 'missing'
-            } else if(!item.enabled){
-                item.status = 'disabled'
-            } else if(inDisabled && !inMods){
-                item.status = 'toEnable'
-            } else if(item.version != null && item.version !== info.version){
-                item.status = 'outdated'
-                item.updateAvailable = true
-            } else {
-                item.status = 'installed'
-            }
-        } catch (err) {
-            item.reason = err.message
-        }
-        items.push(item)
-    }
-
-    return { ok: true, items }
+    return await ModLock.getModStatus({ directory, disabledUrls, lock })
 })
 
 ipcMain.handle('updateMod', async (event, options) => {
     const { directory, url } = options || {}
-    if(typeof directory !== 'string' || directory.length === 0){
-        return { ok: false, reason: '게임 폴더를 알 수 없습니다.' }
-    }
-
-    const slug = modStateKey(url)
-    if(slug == null){
-        return { ok: false, reason: '지원하지 않는 주소입니다. (모드린스 주소 또는 jar 주소)' }
-    }
-
+    let lock
     try {
-        const info = await resolveModTarget(url)
-        if(info == null){
-            return { ok: false, reason: `${MOD_GAME_VERSION} + ${MOD_LOADER} 버전을 찾지 못했습니다.` }
-        }
-
-        const modsDir = path.join(directory, 'mods')
-        const disabledDir = path.join(directory, MOD_DISABLED_DIR)
-        await fs.promises.mkdir(modsDir, { recursive: true })
-
-        const statePath = path.join(modsDir, `${MOD_STATE_FILE_PREFIX}${slug}.json`)
-        const old = await readJsonIfExists(statePath)
-
-        if(old != null && typeof old.fileName === 'string' && old.fileName !== info.fileName){
-            await fs.promises.rm(path.join(modsDir, path.basename(old.fileName)), { force: true })
-            await fs.promises.rm(path.join(disabledDir, path.basename(old.fileName)), { force: true })
-        }
-
-        await fs.promises.rm(path.join(modsDir, info.fileName), { force: true })
-        await downloadToFile(info.url, path.join(modsDir, info.fileName))
-        await writeModState(statePath, {
-            slug,
-            name: old != null ? old.name : slug,
-            version: info.version,
-            fileName: info.fileName,
-            size: info.size
-        })
-
-        return { ok: true, version: info.version, fileName: info.fileName }
+        lock = getModLock()
     } catch (err) {
-        return { ok: false, reason: err.message }
+        return { ok: false, reason: `런처 모드 목록을 읽지 못했습니다. (${err.message})` }
     }
+    return await ModLock.updateMod({ directory, url, lock, userAgent: launcherUserAgent() })
 })
 
 const REDIRECT_URI_PREFIX = 'https://login.microsoftonline.com/common/oauth2/nativeclient?'
@@ -1060,6 +847,7 @@ function createWindow() {
         backgroundColor: '#171614'
     })
     remoteMain.enable(win.webContents)
+    lockMainWindowNavigation(win.webContents)
 
     // 'once' 로 두면 새로 고침 뒤에도 준비됨으로 남아 메시지가 사라지므로(무한 로딩) 매번 초기화합니다.
     win.webContents.on('did-start-loading', () => {
