@@ -1173,7 +1173,7 @@ async function loadNewsFromHtml(newsPage){
                 author: escapeNewsHtml(author),
                 comments: escapeNewsHtml(stats.join(' · ')),
                 commentsLink: link,
-                content: excerpt ? `<p class="newsArticleExcerpt">${escapeNewsHtml(excerpt)}</p>` : ''
+                content: excerpt ? `<p class="newsArticleExcerpt">${linkifyNewsText(excerpt)}</p>` : ''
             })
         })
 
@@ -1237,6 +1237,41 @@ function newsTextWithBreaks(el){
     const clone = el.cloneNode(true)
     clone.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
     return clone.textContent
+}
+
+
+// 디스코드에서 옮겨 온 공지는 링크가 «[글자](주소)»·«<주소>»·맨 주소 꼴 글자로만 남아 있어 누를 수 없었습니다.
+// 나머지 글은 그대로 이스케이프하고 링크만 <a> 로 바꿉니다. 누르면 uicore.js 의 a[href^="http"] 처리가 브라우저로 엽니다.
+function linkifyNewsText(text){
+    const pattern = new RegExp([
+        // [글자](주소) · [글자](<주소>) — 주소 안의 괄호는 한 겹까지 짝이 맞으면 주소로 봅니다.
+        /\[([^[\]\n]+)\]\(\s*<?(https?:\/\/[^\s<>()]+(?:\([^\s<>()]*\)[^\s<>()]*)*)>?\s*\)/.source,
+        // <주소> — 디스코드의 미리보기 끄기 꼴입니다. 꺾쇠는 보여주지 않습니다.
+        /<(https?:\/\/[^\s<>]+)>/.source,
+        // 맨 주소 — 끝에 붙은 문장부호·마크다운 기호·잘린 글의 말줄임표는 주소에서 뺍니다.
+        /(https?:\/\/[^\s<>"…]*[^\s<>"….,:;!?'")\]*_~|])/.source
+    ].join('|'), 'g')
+
+    let html = ''
+    let last = 0
+    for(const match of text.matchAll(pattern)){
+        const [whole, label, maskedUrl, angleUrl, bareUrl] = match
+        let url = maskedUrl || angleUrl || bareUrl
+        let end = match.index + whole.length
+
+        // 맨 주소 끝의 닫는 괄호는 주소 안에 짝 없는 여는 괄호가 있을 때만 주소로 봅니다. 예: …/wiki/Foo_(bar)
+        if(bareUrl){
+            while(text[end] === ')' && url.split('(').length > url.split(')').length){
+                url += ')'
+                end++
+            }
+        }
+
+        html += escapeNewsHtml(text.slice(last, match.index))
+        html += `<a href="${escapeNewsHtml(url)}">${escapeNewsHtml(label != null ? label : url)}</a>`
+        last = end
+    }
+    return html + escapeNewsHtml(text.slice(last))
 }
 
 
