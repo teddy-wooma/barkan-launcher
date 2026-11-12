@@ -2419,6 +2419,12 @@ input:checked + .toggleSwitchSlider:before {
     transition: 0.25s ease;
     outline: none;
 }
+/* Links inside the post body sit inline in running text, so the article-link padding (meant for block links) would push the underline 15px below the line. */
+#newsArticleContentScrollable .newsArticleExcerpt a {
+    padding: 0px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
 #newsArticleContentScrollable a:hover,
 #newsArticleContentScrollable a:focus {
     color: rgba(255, 255, 255, 0.75);
